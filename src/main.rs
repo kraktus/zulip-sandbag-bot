@@ -1,6 +1,8 @@
 use env_logger::{Builder, Target};
+use futures_util::{Stream, StreamExt};
 use log::LevelFilter;
 use std::collections::HashMap;
+use std::pin::Pin;
 
 mod lichess;
 mod score;
@@ -17,5 +19,8 @@ async fn main() {
         .init();
     let lichess = Lichess::default();
     let arenas = lichess.get_arenas().await;
-    // println!("{:?}", lichess.get_players(&arenas.finished[0].id).await);
+    let mut stream = lichess.get_players(&arenas.finished[0]).await;
+    while let Some(player) = stream.next().await {
+        println!("{player:?}");
+    }
 }

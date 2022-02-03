@@ -1,12 +1,18 @@
-use log::error;
+use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
+use log::{error, warn};
 use reqwest::{Client, Error, IntoUrl, RequestBuilder, Response};
 use serde::Deserialize;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use tokio::io::AsyncBufReadExt as _;
 use tokio::time::{sleep, Duration};
+use tokio_stream::wrappers::LinesStream;
+use tokio_util::io::StreamReader;
 
 use std::cmp::min;
+use std::error::Error as StdError;
+use std::io;
 
 use crate::score::SUS_SCORE;
 
@@ -23,10 +29,19 @@ pub struct Arenas {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct Schedule {
+    pub freq: String,
+    pub speed: String,
+}
+
+// schedule":{"freq":"hourly","speed":"hyperBullet"}
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Arena {
     pub id: String,
-    pub has_max_rating: Option<bool>, // if not None, should always be true
+    #[serde(default)]
+    pub has_max_rating: bool, // if not None, should always be true
+    pub schedule: Schedule,
 }
 
 // {"rank":2,"score":57,"rating":2611,"username":"xxx","performance":2462}
@@ -36,18 +51,29 @@ pub struct Player {
     pub score: usize,
     pub rating: usize,
     pub username: String,
-    pub performance: usize,
+    pub performance: Option<usize>,
 }
 
 impl Lichess {
+    async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
+        self.req(self.http.post(url).body(body)).await
+    }
+
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
+        self.req(self.http.get(url)).await
+    }
+
+    async fn req(&self, builder: RequestBuilder) -> Response {
         let backoff_factor = 10;
-        let mut sleep_time = Duration::from_secs(1);
+        let mut sleep_time = Duration::from_secs(60);
         let max_sleep = Duration::from_secs(3600);
         loop {
-            match self.req_inner(url).await {
+            match self
+                .req_inner(builder.try_clone().expect("No streaming body"))
+                .await
+            {
                 Ok(resp) => return resp,
-                Err(err) => error!("{err}"),
+                Err(err) => error!("Error: {err}, retrying after: {sleep_time:?}"),
             }
             sleep(sleep_time).await;
             sleep_time *= backoff_factor;
@@ -55,13 +81,11 @@ impl Lichess {
         }
     }
 
-    async fn req_inner<T: IntoUrl + Copy>(&self, url: T) -> Result<Response, Error> {
-        self.http
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()
-            .await
-            .map(Response::error_for_status)?
+    async fn req_inner(&self, mut builder: RequestBuilder) -> Result<Response, Error> {
+        if let Some(token) = &self.token {
+            builder = builder.bearer_auth(token)
+        }
+        builder.send().await.map(Response::error_for_status)?
     }
 
     pub async fn get_arenas(&self) -> Arenas {
@@ -72,24 +96,54 @@ impl Lichess {
             .expect("Valid JSON Arena decoding")
     }
 
-    // pub async fn get_players(&self, arena_id: &str) -> Vec<Player> {
-    //     // Thanks niklas, https://github.com/lichess-org/lila-openingexplorer/blob/d1b55a43eb4bbaace45c244d7f33d86b11c7ee41/src/indexer/lila.rs#L34-L73
-    //     let stream = self.get(&format!("https://lichess.org/api/tournament/{arena_id}/results"))
-    //         .await
-    //         .bytes_stream()
-    //         .expect("Valid bytes_stream");
+    pub async fn get_players(&self, arena: &Arena) -> impl Stream<Item = Player> {
+        // Thanks niklas, https://github.com/lichess-org/lila-openingexplorer/blob/d1b55a43eb4bbaace45c244d7f33d86b11c7ee41/src/indexer/lila.rs#L34-L73
+        let stream = self
+            .get(&format!(
+                "https://lichess.org/api/tournament/{}/results",
+                &arena.id
+            ))
+            .await
+            .bytes_stream()
+            .map_err(|err| io::Error::new(io::ErrorKind::Other, err));
 
+        Box::pin(
+            LinesStream::new(StreamReader::new(stream).lines()).filter_map(|line| async move {
+                match line {
+                    Ok(line) if line.is_empty() => None,
+                    Ok(line) => serde_json::from_str::<Player>(&line)
+                        .map_err(log_and_pass)
+                        .ok(),
+                    Err(err) => panic!("{err:?}"),
+                }
+            }),
+        )
+    }
 
-    // }
+    pub async fn get_user_info(&self, userIds: Vec<&str>) -> Response {
+        self.post(
+            "https://lichess.org/api/users",
+            userIds.into_iter().take(300).collect::<String>(),
+        )
+        .await
+    }
 
-    //pub  fn investigate_players(&self, )
+    fn preselect_player(arena: &Arena, player: &Player) -> bool {
+        SUS_SCORE
+            .low
+            .perf(&arena.schedule.speed)
+            .map(|score| score <= player.score)
+            .unwrap_or(false)
+    }
 }
 
 impl Default for Lichess {
     fn default() -> Self {
         Self {
             http: Client::new(),
-            token: fs::read(repo_dir().join("LICHESS_TOKEN.txt")).map(|s| String::from_utf8_lossy(&s).to_string()).ok()
+            token: fs::read(repo_dir().join("LICHESS_TOKEN.txt"))
+                .map(|s| String::from_utf8_lossy(&s).to_string())
+                .ok(),
         }
     }
 }
@@ -101,4 +155,9 @@ fn repo_dir() -> PathBuf {
         .nth(2)
         .expect("repo dir")
         .to_path_buf()
+}
+
+fn log_and_pass<T: StdError>(err: T) -> T {
+    warn!("{err}");
+    err
 }

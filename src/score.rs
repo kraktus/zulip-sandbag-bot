@@ -10,13 +10,13 @@ pub struct Score {
 }
 
 impl Score {
-    pub fn perf(&self, perf: &str) -> usize {
+    pub fn perf(&self, perf: &str) -> Option<usize> {
         match perf {
-            "bullet" => self.bullet,
-            "superBlitz" => self.superBlitz,
-            "blitz" => self.blitz,
-            "rapid" => self.rapid,
-            _ => panic!("perf not found"),
+            "bullet" => Some(self.bullet),
+            "superBlitz" => Some(self.superBlitz),
+            "blitz" => Some(self.blitz),
+            "rapid" => Some(self.rapid),
+            _ => None,
         }
     }
 }
