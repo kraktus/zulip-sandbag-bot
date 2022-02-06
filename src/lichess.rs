@@ -15,6 +15,8 @@ use std::error::Error as StdError;
 use std::io;
 
 use crate::score::SUS_SCORE;
+use crate::game_visitor::nb_sus_games;
+use crate::game_visitor::MoveCounter;
 
 pub struct Lichess {
     http: Client,
@@ -54,6 +56,13 @@ pub struct Player {
     pub performance: Option<usize>,
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct User {
+    pub tos_violation: bool,
+    pub created_at: Duration,
+}
+
 impl Lichess {
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
         self.req(self.http.post(url).body(body)).await
@@ -73,7 +82,7 @@ impl Lichess {
                 .await
             {
                 Ok(resp) => return resp,
-                Err(err) => error!("Error: {err}, retrying after: {sleep_time:?}"),
+                Err(err) => error!("Error: {}, on request {:?} retrying after: {:?}", err, &builder, &sleep_time),
             }
             sleep(sleep_time).await;
             sleep_time *= backoff_factor;
@@ -120,12 +129,29 @@ impl Lichess {
         )
     }
 
-    pub async fn get_user_info(&self, userIds: Vec<&str>) -> Response {
+    pub async fn get_users_info(&self, user_ids: &[&str]) -> Vec<User> {
         self.post(
             "https://lichess.org/api/users",
-            userIds.into_iter().take(300).collect::<String>(),
+            user_ids
+                .into_iter()
+                .map(|s| *s)
+                .take(300)
+                .collect::<String>(),
         )
         .await
+        .json::<Vec<User>>()
+        .await
+        .expect("Valid JSON User decoding")
+    }
+
+    pub async fn get_user_games(&self, user_id: &str, perf: &str) -> MoveCounter {
+        nb_sus_games(self.get(
+            &format!("https://lichess.org/api/games/user/{user_id}?max=100&rated=true&perfType={perf}&ongoing=false")
+        )
+        .await
+        .text()
+        .await
+        .expect("raw PGN"), user_id)
     }
 
     fn preselect_player(arena: &Arena, player: &Player) -> bool {
@@ -157,7 +183,7 @@ fn repo_dir() -> PathBuf {
         .to_path_buf()
 }
 
-fn log_and_pass<T: StdError>(err: T) -> T {
+pub fn log_and_pass<T: StdError>(err: T) -> T {
     warn!("{err}");
     err
 }

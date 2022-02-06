@@ -4,6 +4,7 @@ use log::LevelFilter;
 use std::collections::HashMap;
 use std::pin::Pin;
 
+mod game_visitor;
 mod lichess;
 mod score;
 
