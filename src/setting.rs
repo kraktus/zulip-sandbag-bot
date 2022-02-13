@@ -1,4 +1,4 @@
-// based on https://github.com/mehcode/config-rs/tree/master/examples/hierarchical-env
+// based on https://github.com/mehcode/config-rs/blob/0.11.0/examples/hierarchical-env/src/settings.rs
 
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
