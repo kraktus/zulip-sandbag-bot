@@ -3,14 +3,14 @@
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 
-use crate::zulip::Zuliprc;
+use crate::zulip::ZulipConfig;
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
 pub struct Settings {
     #[serde(default = "as_true")]
     pub debug: bool,
-    pub zulip: Zuliprc,
+    pub zulip: ZulipConfig,
     pub lichess_token: Option<String>,
 }
 

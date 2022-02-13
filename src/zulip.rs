@@ -15,12 +15,12 @@ use std::io::BufRead;
 use std::io::BufReader;
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct Zuliprc {
+pub struct ZulipConfig {
     email: String,
     key: String,
 }
 
-impl Zuliprc {
+impl ZulipConfig {
     fn auth(&self) -> Option<String> {
         Some(format!("{}:{}", self.email, self.key))
     }
@@ -28,7 +28,7 @@ impl Zuliprc {
 
 pub struct Zulip {
     http: Client,
-    token: Zuliprc,
+    token: ZulipConfig,
 }
 
 impl Zulip {
@@ -44,6 +44,8 @@ impl Zulip {
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
         req(&self.http, self.http.get(url), &self.token.auth()).await
     }
+
+    async fn post_report(&self) {todo!()}
     // GamesContent = f"*Quick {ArenaVariant} losses*: "
     //  f"[{round(SusGame['Moves']/2)}](<https://lichess.org/{SusGame['ID']}{'' if SusGame['UserIsWhite'] else '/black'}#{SusGame['Moves']}>), "
     //  f"...., [short games](<https://lichess.org/@/{UserID.lower()}/search?turnsMax=20&perf={PerfMap[ArenaVariant]}&mode=1&players.a={UserID.lower()}&players.loser={UserID.lower()}&sort.field=t&sort.order=asc>), "
