@@ -45,9 +45,8 @@ impl TryInto<GameResult> for TempGame {
 
 #[derive(Debug)]
 pub struct MoveCounter {
-    user_id: String,
-    moves: HashMap<GameId, GameResult>,
-    // internals
+    pub user_id: String,
+    pub games: HashMap<GameId, GameResult>,
     temp: TempGame,
 }
 
@@ -55,7 +54,7 @@ impl MoveCounter {
     fn new(user_id: String) -> Self {
         Self {
             user_id,
-            moves: HashMap::new(),
+            games: HashMap::new(),
             temp: TempGame::default(),
         }
     }
@@ -103,12 +102,12 @@ impl Visitor for MoveCounter {
                 .clone()
                 .try_into()
                 .ok()
-                .map(|res| self.moves.insert(id.clone(), res))
+                .map(|res| self.games.insert(id.clone(), res))
         });
     }
 }
 
-pub fn nb_sus_games(games: String, user_id: &str) -> MoveCounter {
+pub fn get_games(games: String, user_id: &str) -> MoveCounter {
     let mut reader = BufferedReader::new_cursor(&games[..]);
 
     let mut counter = MoveCounter::new(user_id.to_string());
