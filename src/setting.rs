@@ -22,10 +22,10 @@ impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let mut s = Config::new();
         // Start off by merging in the "default" configuration file
-        s.merge(File::with_name("examples/hierarchical-env/config/default"))?;
+        s.merge(File::with_name("config/base"))?;
         // Add in a prod configuration file
         // This file shouldn't be checked in to git
-        s.merge(File::with_name("examples/hierarchical-env/config/prod").required(false))?;
+        s.merge(File::with_name("config/prod").required(false))?;
         // Add in settings from the environment (with a prefix of APP)
         // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
         s.merge(Environment::with_prefix("app"))?;
