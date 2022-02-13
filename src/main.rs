@@ -11,7 +11,7 @@ mod zulip;
 
 use crate::lichess::Lichess;
 use crate::setting::Settings;
-use crate::zulip::Zulip;
+
 
 #[tokio::main]
 async fn main() {
