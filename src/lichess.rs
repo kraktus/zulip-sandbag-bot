@@ -21,6 +21,7 @@ use std::str::FromStr;
 use crate::game_visitor::get_games;
 use crate::game_visitor::{GameResult, MoveCounter};
 use crate::score::SUS_SCORE;
+use crate::util::{log_and_pass, repo_dir};
 
 pub struct Lichess {
     http: Client,
@@ -58,7 +59,7 @@ pub struct Arena {
 }
 
 impl Arena {
-    pub fn max_rating(&self) -> Option<usize> {
+    pub fn rating_limit(&self) -> Option<usize> {
         if self.has_max_rating {
             usize::from_str(&self.fullname[1..5]).ok()
         } else {
@@ -231,9 +232,30 @@ impl Lichess {
                         .get(&player.username)
                         .map(User::is_new)
                         .unwrap_or(false)
-                        || sus_games.len() > 25)
+                        || sus_games.len() > 25
+                        || arena
+                            .rating_limit()
+                            .zip(player.performance)
+                            .map(|(r, performance)| {
+                                player.rating < r - 200 || performance > r + 500
+                            })
+                            .unwrap_or(false))
                     {
-                        //|| (player.rating < arena.rating_limit - 200)) {
+                        todo!()
+                    }
+                    if (user
+                        .get(&player.username)
+                        .map(User::is_very_new) // different than above
+                        .unwrap_or(false)
+                        || sus_games.len() > 30
+                        || arena
+                            .rating_limit()
+                            .zip(player.performance)
+                            .map(|(r, performance)| {
+                                player.rating < r - 300 || performance > r + 400
+                            })
+                            .unwrap_or(false))
+                    {
                         todo!()
                     }
                 }
@@ -253,15 +275,6 @@ impl Default for Lichess {
     }
 }
 
-fn repo_dir() -> PathBuf {
-    env::current_exe()
-        .expect("No permission?")
-        .ancestors()
-        .nth(2)
-        .expect("repo dir")
-        .to_path_buf()
-}
-
 fn preselect_player(arena: &Arena, player: &Player) -> bool {
     SUS_SCORE
         .low
@@ -270,7 +283,4 @@ fn preselect_player(arena: &Arena, player: &Player) -> bool {
         .unwrap_or(false)
 }
 
-pub fn log_and_pass<T: StdError>(err: T) -> T {
-    warn!("{err}");
-    err
-}
+

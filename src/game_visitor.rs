@@ -1,4 +1,4 @@
-use crate::lichess::log_and_pass;
+use crate::util::log_and_pass;
 use pgn_reader::{BufferedReader, RawHeader, SanPlus, Skip, Visitor};
 use std::collections::HashMap;
 use std::io;
