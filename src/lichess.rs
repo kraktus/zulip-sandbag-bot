@@ -9,6 +9,8 @@ use tokio::io::AsyncBufReadExt as _;
 use tokio::time::{sleep, Duration};
 use tokio_stream::wrappers::LinesStream;
 use tokio_util::io::StreamReader;
+use chrono::{DateTime, Utc};
+use chrono::serde::ts_milliseconds;
 
 use std::cmp::min;
 use std::error::Error as StdError;
@@ -65,8 +67,20 @@ pub struct Player {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
+    #[serde(default)]
     pub tos_violation: bool,
-    pub created_at: Duration,
+    #[serde(with = "ts_milliseconds")]
+    pub created_at: DateTime<Utc>,
+}
+
+impl User {
+    pub fn is_new(&self) -> bool {
+       todo!()
+    }
+
+    pub fn is_very_new(&self) -> bool {
+        todo!()
+    }
 }
 
 impl Lichess {
@@ -164,16 +178,31 @@ impl Lichess {
     }
 
     async fn send_player(arena: &Arena, player: &Player) {
-        ()
+        todo!()
     }
 
     pub async fn watch(&self) {
-        for arena in self.get_arenas().await.finished {
+        for arena in self
+            .get_arenas()
+            .await
+            .finished
+            .iter()
+            .filter(|a| a.has_max_rating)
+        {
             let mut stream = self.get_players(&arena).await;
             while let Some(player) = stream.next().await {
                 if preselect_player(&arena, &player) {
                     // check if above high score threshold before dling games
-                    let counter = self.get_user_games(&player.username, &arena.perf.key);
+                    let counter = self.get_user_games(&player.username, &arena.perf.key).await;
+                    print!("{counter:?}");
+                    if SUS_SCORE
+                        .high
+                        .perf(&arena.schedule.speed)
+                        .map(|score| score <= player.score)
+                        .unwrap_or(false)
+                    {
+                        todo!() // send to zulip if games are enough
+                    }
                 }
             }
         }

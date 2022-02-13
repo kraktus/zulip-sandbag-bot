@@ -19,9 +19,10 @@ async fn main() {
         .target(Target::Stdout)
         .init();
     let lichess = Lichess::default();
-    let arenas = lichess.get_arenas().await;
-    let mut stream = lichess.get_players(&arenas.finished[0]).await;
-    while let Some(player) = stream.next().await {
-        println!("{player:?}");
-    }
+    // let arenas = lichess.get_arenas().await;
+    // let mut stream = lichess.get_players(&arenas.finished[0]).await;
+    // while let Some(player) = stream.next().await {
+    //     println!("{player:?}");
+    // }
+    println!("{:?}", lichess.get_users_info(&vec!["german11"]).await);
 }
