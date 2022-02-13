@@ -5,9 +5,9 @@ use log::LevelFilter;
 mod game_visitor;
 mod lichess;
 mod score;
+mod setting;
 mod util;
 mod zulip;
-mod setting;
 
 use crate::lichess::Lichess;
 
