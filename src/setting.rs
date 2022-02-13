@@ -14,7 +14,9 @@ pub struct Settings {
     pub lichess_token: Option<String>,
 }
 
-fn as_true() -> bool { true }
+fn as_true() -> bool {
+    true
+}
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {

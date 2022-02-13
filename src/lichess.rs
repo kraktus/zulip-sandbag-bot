@@ -6,8 +6,6 @@ use reqwest::{Client, IntoUrl, Response};
 use serde::Deserialize;
 use std::collections::HashMap;
 
-use std::fs;
-
 use tokio::io::AsyncBufReadExt as _;
 
 use tokio_stream::wrappers::LinesStream;
@@ -19,7 +17,7 @@ use std::str::FromStr;
 use crate::game_visitor::get_games;
 use crate::game_visitor::{GameResult, MoveCounter};
 use crate::score::SUS_SCORE;
-use crate::util::{log_and_pass, repo_dir, req};
+use crate::util::{log_and_pass, req};
 
 pub struct Lichess {
     http: Client,
@@ -97,7 +95,6 @@ impl User {
 }
 
 impl Lichess {
-
     pub fn new(token: Option<String>) -> Self {
         Self {
             http: Client::new(),

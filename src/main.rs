@@ -18,7 +18,14 @@ async fn main() {
     let s = Settings::new().expect("acceptable config");
     print!("{s:?}");
     builder
-        .filter(None, if s.debug {LevelFilter::Trace} else {LevelFilter::Info})
+        .filter(
+            None,
+            if s.debug {
+                LevelFilter::Trace
+            } else {
+                LevelFilter::Info
+            },
+        )
         .default_format()
         .target(Target::Stdout)
         .init();
