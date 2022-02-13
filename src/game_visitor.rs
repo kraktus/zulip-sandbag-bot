@@ -71,10 +71,21 @@ impl Visitor for MoveCounter {
     fn header(&mut self, key: &[u8], value: RawHeader<'_>) {
         let value_opt = value.decode_utf8().map_err(log_and_pass).ok();
         match key {
-            b"Site" => self.temp.id = value_opt.and_then(|s| s.split('/').next_back().map(|s| s.to_string())),
+            b"Site" => {
+                self.temp.id =
+                    value_opt.and_then(|s| s.split('/').next_back().map(|s| s.to_string()))
+            }
             b"White" => self.temp.is_white = value_opt.map(|s| s.contains(&self.user_id)),
-            b"Result" => self.temp.won = None, //self.temp.won = value_opt.zip(self.temp.is_white).map(|v, is_white| if is_white {s == "1-0"),
-            _ => ()
+            b"Result" => {
+                self.temp.won = value_opt.zip(self.temp.is_white).map(|(v, is_white)| {
+                    if is_white {
+                        v == "1-0"
+                    } else {
+                        v == "0-1"
+                    }
+                })
+            }
+            _ => (),
         }
     }
 
