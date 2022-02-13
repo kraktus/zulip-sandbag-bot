@@ -1,20 +1,20 @@
 use chrono::serde::ts_milliseconds;
 use chrono::{DateTime, Utc};
 use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
-use log::{error, warn};
-use reqwest::{Client, Error, IntoUrl, RequestBuilder, Response};
+
+use reqwest::{Client, IntoUrl, Response};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::env;
+
 use std::fs;
-use std::path::PathBuf;
+
 use tokio::io::AsyncBufReadExt as _;
-use tokio::time::{sleep, Duration};
+
 use tokio_stream::wrappers::LinesStream;
 use tokio_util::io::StreamReader;
 
-use std::cmp::min;
-use std::error::Error as StdError;
+
+
 use std::io;
 use std::str::FromStr;
 
@@ -168,7 +168,7 @@ impl Lichess {
         .expect("raw PGN"), user_id)
     }
 
-    async fn send_player(arena: &Arena, player: &Player) {
+    async fn send_player(_arena: &Arena, _player: &Player) {
         todo!()
     }
 
@@ -188,7 +188,7 @@ impl Lichess {
                         .await
                         .games
                         .into_iter()
-                        .filter(|(id, game_res)| game_res.moves < 30 && !game_res.won)
+                        .filter(|(_id, game_res)| game_res.moves < 30 && !game_res.won)
                         .collect();
                     print!("{sus_games:?}");
                     if SUS_SCORE
@@ -200,7 +200,7 @@ impl Lichess {
                         todo!() // send to zulip if arena sort by itself is enough
                     }
                     let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
-                    if (user
+                    if user
                         .get(&player.username)
                         .map(User::is_new)
                         .unwrap_or(false)
@@ -211,11 +211,11 @@ impl Lichess {
                             .map(|(r, performance)| {
                                 player.rating < r - 200 || performance > r + 500
                             })
-                            .unwrap_or(false))
+                            .unwrap_or(false)
                     {
                         todo!()
                     }
-                    if (user
+                    if user
                         .get(&player.username)
                         .map(User::is_very_new) // different than above
                         .unwrap_or(false)
@@ -226,7 +226,7 @@ impl Lichess {
                             .map(|(r, performance)| {
                                 player.rating < r - 300 || performance > r + 400
                             })
-                            .unwrap_or(false))
+                            .unwrap_or(false)
                     {
                         todo!()
                     }

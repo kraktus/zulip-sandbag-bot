@@ -1,26 +1,26 @@
-use chrono::serde::ts_milliseconds;
-use chrono::{DateTime, Utc};
-use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
+
+
+use futures_util::stream::{StreamExt as _};
 use log::{error, warn};
-use reqwest::{Client, Error, IntoUrl, RequestBuilder, Response};
-use serde::Deserialize;
-use std::collections::HashMap;
+use reqwest::{Client, Error, RequestBuilder, Response};
+
+
 use std::env;
-use std::fs;
+
 use std::path::PathBuf;
-use tokio::io::AsyncBufReadExt as _;
+
 use tokio::time::{sleep, Duration};
-use tokio_stream::wrappers::LinesStream;
-use tokio_util::io::StreamReader;
+
+
 
 use std::cmp::min;
 use std::error::Error as StdError;
-use std::io;
-use std::str::FromStr;
 
-use crate::game_visitor::get_games;
-use crate::game_visitor::{GameResult, MoveCounter};
-use crate::score::SUS_SCORE;
+
+
+
+
+
 
 pub fn log_and_pass<T: StdError>(err: T) -> T {
     warn!("{err}");
@@ -61,7 +61,7 @@ pub async fn req(client: &Client, builder: RequestBuilder, auth: &Option<String>
 }
 
 async fn req_inner(
-    client: &Client,
+    _client: &Client,
     mut builder: RequestBuilder,
     auth: &Option<String>,
 ) -> Result<Response, Error> {

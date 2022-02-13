@@ -1,7 +1,7 @@
 use crate::util::log_and_pass;
 use pgn_reader::{BufferedReader, RawHeader, SanPlus, Skip, Visitor};
 use std::collections::HashMap;
-use std::io;
+
 
 type GameId = String;
 
@@ -111,6 +111,6 @@ pub fn get_games(games: String, user_id: &str) -> MoveCounter {
     let mut reader = BufferedReader::new_cursor(&games[..]);
 
     let mut counter = MoveCounter::new(user_id.to_string());
-    let moves = reader.read_all(&mut counter).expect("valid pgn");
+    let _moves = reader.read_all(&mut counter).expect("valid pgn");
     counter
 }
