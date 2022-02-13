@@ -2,7 +2,6 @@ use crate::util::log_and_pass;
 use pgn_reader::{BufferedReader, RawHeader, SanPlus, Skip, Visitor};
 use std::collections::HashMap;
 
-
 type GameId = String;
 
 #[derive(Debug, Hash, Copy, Clone)]
