@@ -7,8 +7,8 @@ use std::pin::Pin;
 mod game_visitor;
 mod lichess;
 mod score;
-mod zulip;
 mod util;
+mod zulip;
 
 use crate::lichess::Lichess;
 

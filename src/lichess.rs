@@ -21,7 +21,7 @@ use std::str::FromStr;
 use crate::game_visitor::get_games;
 use crate::game_visitor::{GameResult, MoveCounter};
 use crate::score::SUS_SCORE;
-use crate::util::{log_and_pass, repo_dir};
+use crate::util::{log_and_pass, repo_dir, req};
 
 pub struct Lichess {
     http: Client,
@@ -100,39 +100,11 @@ impl User {
 
 impl Lichess {
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
-        self.req(self.http.post(url).body(body)).await
+        req(&self.http, self.http.post(url).body(body), &self.token).await
     }
 
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
-        self.req(self.http.get(url)).await
-    }
-
-    async fn req(&self, builder: RequestBuilder) -> Response {
-        let backoff_factor = 10;
-        let mut sleep_time = Duration::from_secs(60);
-        let max_sleep = Duration::from_secs(3600);
-        loop {
-            match self
-                .req_inner(builder.try_clone().expect("No streaming body"))
-                .await
-            {
-                Ok(resp) => return resp,
-                Err(err) => error!(
-                    "Error: {}, on request {:?} retrying after: {:?}",
-                    err, &builder, &sleep_time
-                ),
-            }
-            sleep(sleep_time).await;
-            sleep_time *= backoff_factor;
-            sleep_time = min(sleep_time, max_sleep);
-        }
-    }
-
-    async fn req_inner(&self, mut builder: RequestBuilder) -> Result<Response, Error> {
-        if let Some(token) = &self.token {
-            builder = builder.bearer_auth(token)
-        }
-        builder.send().await.map(Response::error_for_status)?
+        req(&self.http, self.http.get(url), &self.token).await
     }
 
     pub async fn get_arenas(&self) -> Arenas {
@@ -282,5 +254,3 @@ fn preselect_player(arena: &Arena, player: &Player) -> bool {
         .map(|score| score <= player.score)
         .unwrap_or(false)
 }
-
-
