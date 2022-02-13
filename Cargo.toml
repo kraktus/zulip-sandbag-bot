@@ -17,3 +17,4 @@ env_logger = "0.9"
 futures-util = "0.3"
 pgn-reader = "0.19"
 chrono = { version = "0.4", features = ["serde"] }
+config = "0.11"

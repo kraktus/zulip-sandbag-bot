@@ -63,6 +63,9 @@ impl Zulip {
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
         req(&self.http, self.http.get(url), &self.token.auth()).await
     }
-
-    //pub async fn send_report(&self, )
+// GamesContent = f"*Quick {ArenaVariant} losses*: "
+//  f"[{round(SusGame['Moves']/2)}](<https://lichess.org/{SusGame['ID']}{'' if SusGame['UserIsWhite'] else '/black'}#{SusGame['Moves']}>), "
+//  f"...., [short games](<https://lichess.org/@/{UserID.lower()}/search?turnsMax=20&perf={PerfMap[ArenaVariant]}&mode=1&players.a={UserID.lower()}&players.loser={UserID.lower()}&sort.field=t&sort.order=asc>), "
+// f"[all games](<https://lichess.org/mod/{UserID.lower()}/games?speed={ArenaVariant}>)."
+    // pub async fn send_report(&self)
 }

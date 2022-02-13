@@ -7,6 +7,7 @@ mod lichess;
 mod score;
 mod util;
 mod zulip;
+mod setting;
 
 use crate::lichess::Lichess;
 
