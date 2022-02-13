@@ -16,15 +16,6 @@ pub fn log_and_pass<T: StdError>(err: T) -> T {
     err
 }
 
-pub fn repo_dir() -> PathBuf {
-    env::current_exe()
-        .expect("No permission?")
-        .ancestors()
-        .nth(2)
-        .expect("repo dir")
-        .to_path_buf()
-}
-
 pub async fn req(client: &Client, builder: RequestBuilder, auth: &Option<String>) -> Response {
     let backoff_factor = 10;
     let mut sleep_time = Duration::from_secs(60);

@@ -11,6 +11,8 @@ use crate::util::req;
 pub struct ZulipConfig {
     email: String,
     key: String,
+    channel: String,
+    topic: String,
 }
 
 impl ZulipConfig {
@@ -41,6 +43,21 @@ impl Zulip {
         .await
     }
 
+    async fn post_sandbag_msg<T: IntoUrl + Copy>(&self, url: T, msg: String) -> Response {
+        let params = [
+            ("type", "stream"),
+            ("to", &self.config.channel),
+            ("subject", &self.config.topic),
+            ("content", &msg),
+        ];
+        req(
+            &self.http,
+            self.http.post(url).form(&params),
+            &self.config.auth(),
+        )
+        .await
+    }
+
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
         req(&self.http, self.http.get(url), &self.config.auth()).await
     }
@@ -50,23 +67,21 @@ impl Zulip {
         let user_rating = &player.rating;
         let user_score = &player.score;
         let arena_id = &arena.id;
-        let arena_fullname = &arena.fullname;
+        let arena_fullname = &arena.full_name;
         let perf = &arena.perf.key;
         let body = format!("
 **{user_id} ({user_rating})**
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
 *Quick {perf} losses*:
 {}...
-{}
 [short games](<https://lichess.org/@/{user_id}/search?turnsMax=20&perf={perf}&mode=1&players.a={user_id}&players.loser={user_id}&sort.field=t&sort.order=asc)
-[all games](<https://lichess.org/mod/{user_id}/games?speed={perf}>).", games.iter().map(
+[all games](<https://lichess.org/mod/{user_id}/games?speed={perf}>)", games.iter().take(6).map(
         |g| format!("[{}](<https://lichess.org/{}{}#{}>),", 
             g.moves / 2,
             g.id,
             if !g.is_white {"black"} else {""},
             g.moves)
-        ).collect::<String>(),
-    "TODO"
+        ).collect::<String>()
     );
         debug!("body sent to zulip: {body}")
     }

@@ -53,13 +53,13 @@ pub struct Arena {
     pub has_max_rating: bool, // if not None, should always be true
     pub schedule: Schedule,
     pub perf: Perf,
-    pub fullname: String,
+    pub full_name: String,
 }
 
 impl Arena {
     pub fn rating_limit(&self) -> Option<usize> {
         if self.has_max_rating {
-            usize::from_str(&self.fullname[1..5]).ok()
+            usize::from_str(&self.full_name[1..5]).ok()
         } else {
             None
         }
@@ -192,10 +192,11 @@ impl Lichess {
             let mut stream = self.get_players(&arena).await;
             while let Some(player) = stream.next().await {
                 if preselect_player(&arena, &player) {
-                    let sus_games = self
+                    let mut sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
                         .games;
+                    sus_games.sort_by(|a, b| a.moves.cmp(&b.moves));
                     print!("{sus_games:?}");
                     let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
                     if SUS_SCORE

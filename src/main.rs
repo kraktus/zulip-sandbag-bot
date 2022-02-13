@@ -16,12 +16,11 @@ use crate::setting::Settings;
 async fn main() {
     let mut builder = Builder::new();
     let s = Settings::new().expect("syntaxically correct config");
-    print!("{s:?}");
     builder
         .filter(
             None,
             if s.debug {
-                LevelFilter::Trace
+                LevelFilter::Debug
             } else {
                 LevelFilter::Info
             },
@@ -35,5 +34,5 @@ async fn main() {
     // while let Some(player) = stream.next().await {
     //     println!("{player:?}");
     // }
-    println!("{:?}", lichess.get_users_info(&vec!["german11"]).await);
+    lichess.watch().await;
 }
