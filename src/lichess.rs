@@ -14,9 +14,9 @@ use std::cmp::min;
 use std::error::Error as StdError;
 use std::io;
 
-use crate::score::SUS_SCORE;
 use crate::game_visitor::nb_sus_games;
 use crate::game_visitor::MoveCounter;
+use crate::score::SUS_SCORE;
 
 pub struct Lichess {
     http: Client,
@@ -28,6 +28,11 @@ pub struct Lichess {
 pub struct Arenas {
     pub created: Vec<Arena>,
     pub finished: Vec<Arena>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Perf {
+    pub key: String, // TODO use enum instead
 }
 
 #[derive(Deserialize, Debug)]
@@ -44,6 +49,7 @@ pub struct Arena {
     #[serde(default)]
     pub has_max_rating: bool, // if not None, should always be true
     pub schedule: Schedule,
+    pub perf: Perf,
 }
 
 // {"rank":2,"score":57,"rating":2611,"username":"xxx","performance":2462}
@@ -82,7 +88,10 @@ impl Lichess {
                 .await
             {
                 Ok(resp) => return resp,
-                Err(err) => error!("Error: {}, on request {:?} retrying after: {:?}", err, &builder, &sleep_time),
+                Err(err) => error!(
+                    "Error: {}, on request {:?} retrying after: {:?}",
+                    err, &builder, &sleep_time
+                ),
             }
             sleep(sleep_time).await;
             sleep_time *= backoff_factor;
@@ -154,12 +163,20 @@ impl Lichess {
         .expect("raw PGN"), user_id)
     }
 
-    fn preselect_player(arena: &Arena, player: &Player) -> bool {
-        SUS_SCORE
-            .low
-            .perf(&arena.schedule.speed)
-            .map(|score| score <= player.score)
-            .unwrap_or(false)
+    async fn send_player(arena: &Arena, player: &Player) {
+        ()
+    }
+
+    pub async fn watch(&self) {
+        for arena in self.get_arenas().await.finished {
+            let mut stream = self.get_players(&arena).await;
+            while let Some(player) = stream.next().await {
+                if preselect_player(&arena, &player) {
+                    // check if above high score threshold before dling games
+                    let counter = self.get_user_games(&player.username, &arena.perf.key);
+                }
+            }
+        }
     }
 }
 
@@ -181,6 +198,14 @@ fn repo_dir() -> PathBuf {
         .nth(2)
         .expect("repo dir")
         .to_path_buf()
+}
+
+fn preselect_player(arena: &Arena, player: &Player) -> bool {
+    SUS_SCORE
+        .low
+        .perf(&arena.schedule.speed)
+        .map(|score| score <= player.score)
+        .unwrap_or(false)
 }
 
 pub fn log_and_pass<T: StdError>(err: T) -> T {
