@@ -75,7 +75,7 @@ impl Zulip {
         let arena_fullname = &arena.full_name;
         let perf = &arena.perf.key;
         let msg = format!("
-**{user_id} ({user_rating})**
+**[{user_id} ({user_rating})](https://lichess.org/@/{user_id})**
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
 *Quick {perf} losses*:
 {}...
