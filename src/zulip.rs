@@ -4,7 +4,7 @@ use log::debug;
 use serde::Deserialize;
 
 use crate::game_visitor::GameResult;
-use crate::lichess::Arena;
+use crate::lichess::{Arena, Player};
 use crate::util::req;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -45,9 +45,17 @@ impl Zulip {
         req(&self.http, self.http.get(url), &self.config.auth()).await
     }
 
-    pub async fn post_report(&self, user_id: &str, arena: &Arena, games: Vec<GameResult>) {
+    pub async fn post_report(&self, player: &Player, arena: &Arena, games: Vec<GameResult>) {
+        let user_id = &player.username;
+        let user_rating = &player.rating;
+        let user_score = &player.score;
+        let arena_id = &arena.id;
+        let arena_fullname = &arena.fullname;
         let perf = &arena.perf.key;
-        let body = format!("*Quick {perf} losses*:
+        let body = format!("
+**{user_id} ({user_rating})**
+{user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
+*Quick {perf} losses*:
 {}...
 {}
 [short games](<https://lichess.org/@/{user_id}/search?turnsMax=20&perf={perf}&mode=1&players.a={user_id}&players.loser={user_id}&sort.field=t&sort.order=asc)

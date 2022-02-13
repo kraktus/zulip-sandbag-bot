@@ -53,7 +53,7 @@ pub struct Arena {
     pub has_max_rating: bool, // if not None, should always be true
     pub schedule: Schedule,
     pub perf: Perf,
-    fullname: String,
+    pub fullname: String,
 }
 
 impl Arena {
@@ -204,9 +204,8 @@ impl Lichess {
                         .map(|score| score <= player.score)
                         .unwrap_or(false)
                     {
-                        self.zulip
-                            .post_report(&player.username, &arena, sus_games)
-                            .await; // send to zulip if arena sort by itself is enough
+                        self.zulip.post_report(&player, &arena, sus_games).await;
+                    // send to zulip if arena sort by itself is enough
                     } else if user
                         .get(&player.username)
                         .map(User::is_new)
@@ -220,9 +219,7 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        self.zulip
-                            .post_report(&player.username, &arena, sus_games)
-                            .await;
+                        self.zulip.post_report(&player, &arena, sus_games).await;
                     } else if user
                         .get(&player.username)
                         .map(User::is_very_new) // different than above
@@ -236,9 +233,7 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        self.zulip
-                            .post_report(&player.username, &arena, sus_games)
-                            .await;
+                        self.zulip.post_report(&player, &arena, sus_games).await;
                     }
                 }
             }
