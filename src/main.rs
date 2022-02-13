@@ -35,7 +35,7 @@ async fn main() {
     // while let Some(player) = stream.next().await {
     //     println!("{player:?}");
     // }
-    // lichess.watch().await;
-    let z = Zulip::new(s.zulip);
-    z.post_sandbag_msg("test").await;
+    lichess.watch().await;
+    // let z = Zulip::new(s.zulip);
+    // z.post_sandbag_msg("test").await;
 }

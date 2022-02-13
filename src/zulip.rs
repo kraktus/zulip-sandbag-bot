@@ -44,7 +44,8 @@ impl Zulip {
         .await
     }
 
-    pub async fn post_sandbag_msg(&self, msg: &str) -> Response { // DEBUG set as public
+    pub async fn post_sandbag_msg(&self, msg: &str) -> Response {
+        // DEBUG set as public
         let params = [
             ("type", "stream"),
             ("to", &self.config.channel),

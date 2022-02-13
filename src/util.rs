@@ -14,7 +14,7 @@ pub fn log_and_pass<T: StdError>(err: T) -> T {
 
 pub enum Auth {
     Basic(String, String),
-    Bearer(String)
+    Bearer(String),
 }
 
 pub async fn req(client: &Client, builder: RequestBuilder, authOpt: &Option<Auth>) -> Response {
@@ -51,7 +51,6 @@ async fn req_inner(
             Auth::Bearer(token) => builder = builder.bearer_auth(token),
             Auth::Basic(username, pwd) => builder = builder.basic_auth(&username, Some(&pwd)),
         }
-        
     }
     builder.send().await.map(Response::error_for_status)?
 }
