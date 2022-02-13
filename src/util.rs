@@ -12,7 +12,12 @@ pub fn log_and_pass<T: StdError>(err: T) -> T {
     err
 }
 
-pub async fn req(client: &Client, builder: RequestBuilder, auth: &Option<String>) -> Response {
+pub enum Auth {
+    Basic(String, String),
+    Bearer(String)
+}
+
+pub async fn req(client: &Client, builder: RequestBuilder, authOpt: &Option<Auth>) -> Response {
     let backoff_factor = 10;
     let mut sleep_time = Duration::from_secs(60);
     let max_sleep = Duration::from_secs(3600);
@@ -20,7 +25,7 @@ pub async fn req(client: &Client, builder: RequestBuilder, auth: &Option<String>
         match req_inner(
             client,
             builder.try_clone().expect("No streaming body"),
-            auth,
+            authOpt,
         )
         .await
         {
@@ -39,10 +44,14 @@ pub async fn req(client: &Client, builder: RequestBuilder, auth: &Option<String>
 async fn req_inner(
     _client: &Client,
     mut builder: RequestBuilder,
-    auth: &Option<String>,
+    authOpt: &Option<Auth>,
 ) -> Result<Response, Error> {
-    if let Some(token) = auth {
-        builder = builder.bearer_auth(token)
+    if let Some(auth) = authOpt {
+        match auth {
+            Auth::Bearer(token) => builder = builder.bearer_auth(token),
+            Auth::Basic(username, pwd) => builder = builder.basic_auth(&username, Some(&pwd)),
+        }
+        
     }
     builder.send().await.map(Response::error_for_status)?
 }

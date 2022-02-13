@@ -20,13 +20,13 @@ use std::time::Duration;
 use crate::game_visitor::get_games;
 use crate::game_visitor::MoveCounter;
 use crate::score::SUS_SCORE;
-use crate::util::{log_and_pass, req};
+use crate::util::{log_and_pass, req, Auth};
 use crate::zulip::Zulip;
 use crate::Settings;
 
 pub struct Lichess {
     zulip: Zulip,
-    token: Option<String>,
+    token: Option<Auth>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -103,7 +103,7 @@ impl Lichess {
     pub fn new(settings: Settings) -> Self {
         Self {
             zulip: Zulip::new(settings.zulip.clone()),
-            token: settings.lichess_token,
+            token: settings.lichess_token.map(Auth::Bearer),
         }
     }
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {

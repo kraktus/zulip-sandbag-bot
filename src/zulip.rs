@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::game_visitor::GameResult;
 use crate::lichess::{Arena, Player};
-use crate::util::req;
+use crate::util::{req, Auth};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ZulipConfig {
@@ -17,8 +17,8 @@ pub struct ZulipConfig {
 }
 
 impl ZulipConfig {
-    fn auth(&self) -> Option<String> {
-        Some(format!("{}:{}", self.email, self.key))
+    fn auth(&self) -> Option<Auth> {
+        Some(Auth::Basic(self.email.clone(), self.key.clone()))
     }
 }
 
@@ -44,13 +44,14 @@ impl Zulip {
         .await
     }
 
-    async fn post_sandbag_msg(&self, msg: String) -> Response {
+    pub async fn post_sandbag_msg(&self, msg: &str) -> Response { // DEBUG set as public
         let params = [
             ("type", "stream"),
             ("to", &self.config.channel),
-            ("subject", &self.config.topic),
+            ("topic", &self.config.topic),
             ("content", &msg),
         ];
+        debug!("{params:?}");
         req(
             &self.http,
             self.http
@@ -87,7 +88,7 @@ impl Zulip {
         ).collect::<String>()
     );
         debug!("body sent to zulip: {msg}");
-        self.post_sandbag_msg(msg).await;
+        self.post_sandbag_msg(&msg).await;
     }
     //  f"[{round(SusGame['Moves']/2)}](<https://lichess.org/{SusGame['ID']}{'' if SusGame['UserIsWhite'] else '/black'}#{SusGame['Moves']}>), "
     //  f"...., [short games](<https://lichess.org/@/{UserID.lower()}/search?turnsMax=20&perf={PerfMap[ArenaVariant]}&mode=1&players.a={UserID.lower()}&players.loser={UserID.lower()}&sort.field=t&sort.order=asc>), "

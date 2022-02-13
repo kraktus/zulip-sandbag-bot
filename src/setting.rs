@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::zulip::ZulipConfig;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
 pub struct Settings {
     #[serde(default = "as_true")]
