@@ -15,21 +15,47 @@ use tokio_util::io::StreamReader;
 
 use std::cmp::min;
 use std::error::Error as StdError;
+use std::fs::File;
 use std::io;
 use std::str::FromStr;
 
 use crate::game_visitor::get_games;
 use crate::game_visitor::{GameResult, MoveCounter};
 use crate::score::SUS_SCORE;
+use crate::util::repo_dir;
+use crate::util::req;
+use std::io::BufRead;
+use std::io::BufReader;
 
 struct Zuliprc {
     email: String,
     api_key: String,
 }
 
+impl Default for Zuliprc {
+    fn default() -> Self {
+        let file = File::open(repo_dir().join("zuliprc.txt")).expect("zuliprc.txt at repo root");
+        let reader = BufReader::new(file);
+        let mut hash_map: HashMap<String, String> = HashMap::new();
+
+        reader.lines().into_iter().for_each(|l| {
+            l.unwrap()
+                .split_once("=")
+                .map(|(a, b)| hash_map.insert(a.to_string(), b.to_string()));
+        });
+        Self {
+            email: hash_map
+                .get("email")
+                .expect("email section in zuliprc")
+                .clone(),
+            api_key: hash_map.get("key").expect("key section in zuliprc").clone(),
+        }
+    }
+}
+
 impl Zuliprc {
-    fn auth(&self) -> String {
-        format!("{}:{}", self.email, self.api_key)
+    fn auth(&self) -> Option<String> {
+        Some(format!("{}:{}", self.email, self.api_key))
     }
 }
 
@@ -38,59 +64,19 @@ pub struct Zulip {
     token: Zuliprc,
 }
 
-// impl Zulip {
-//     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
-//         self.req(self.http.post(url).body(body)).await
-//     }
+impl Zulip {
+    async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
+        req(
+            &self.http,
+            self.http.post(url).body(body),
+            &self.token.auth(),
+        )
+        .await
+    }
 
-//     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
-//         self.req(self.http.get(url)).await
-//     }
+    async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
+        req(&self.http, self.http.get(url), &self.token.auth()).await
+    }
 
-//     async fn req(&self, builder: RequestBuilder) -> Response {
-//         let backoff_factor = 10;
-//         let mut sleep_time = Duration::from_secs(60);
-//         let max_sleep = Duration::from_secs(3600);
-//         loop {
-//             match self
-//                 .req_inner(builder.try_clone().expect("No streaming body"))
-//                 .await
-//             {
-//                 Ok(resp) => return resp,
-//                 Err(err) => error!(
-//                     "Error: {}, on request {:?} retrying after: {:?}",
-//                     err, &builder, &sleep_time
-//                 ),
-//             }
-//             sleep(sleep_time).await;
-//             sleep_time *= backoff_factor;
-//             sleep_time = min(sleep_time, max_sleep);
-//         }
-//     }
-
-//     async fn req_inner(&self, mut builder: RequestBuilder) -> Result<Response, Error> {
-//         if let Some(token) = &self.token {
-//             builder = builder.bearer_auth(token)
-//         }
-//         builder.send().await.map(Response::error_for_status)?
-//     }
-
-//     pub async fn get_arenas(&self) -> Arenas {
-//         self.get("https://lichess.org/api/tournament")
-//             .await
-//             .json::<Arenas>()
-//             .await
-//             .expect("Valid JSON Arena decoding")
-//     }
-// }
-
-// impl Default for Lichess {
-//     fn default() -> Self {
-//         Self {
-//             http: Client::new(),
-//             token: fs::read(repo_dir().join("LICHESS_TOKEN.txt"))
-//                 .map(|s| String::from_utf8_lossy(&s).to_string())
-//                 .ok(),
-//         }
-//     }
-// }
+    //pub async fn send_report(&self, )
+}
