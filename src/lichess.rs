@@ -11,7 +11,14 @@ use tokio::io::AsyncBufReadExt as _;
 use tokio_stream::wrappers::LinesStream;
 use tokio_util::io::StreamReader;
 
+use tokio::{
+    sync::{watch, RwLock},
+    task::JoinHandle,
+    time::{sleep, timeout},
+};
+
 use std::io;
+use std::time::Duration;
 use std::str::FromStr;
 
 use crate::game_visitor::get_games;
@@ -167,14 +174,17 @@ impl Lichess {
         )
     }
 
-    pub async fn get_user_games(&self, user_id: &str, perf: &str) -> MoveCounter {
-        get_games(self.get(
+    pub async fn get_user_games(&self, user_id: &str, perf: &str) -> Option<MoveCounter> {
+        let games = timeout(
+            Duration::from_secs(60),
+            self.get(
             &format!("https://lichess.org/api/games/user/{user_id}?max=100&rated=true&perfType={perf}&ongoing=false")
+        ),
         )
-        .await
+        .await.ok()?
         .text()
-        .await
-        .expect("raw PGN"), user_id)
+        .await.ok()?;
+        Some(get_games(games, user_id))
     }
 
     async fn send_player(_arena: &Arena, _player: &Player) {
@@ -195,6 +205,7 @@ impl Lichess {
                     let mut sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
+                        .unwrap_or_else(|| MoveCounter::new(player.username.clone()))
                         .games;
                     sus_games.sort_by(|a, b| a.moves.cmp(&b.moves));
                     print!("{sus_games:?}");

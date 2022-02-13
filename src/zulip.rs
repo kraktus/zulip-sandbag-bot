@@ -13,6 +13,7 @@ pub struct ZulipConfig {
     key: String,
     channel: String,
     topic: String,
+    site: String,
 }
 
 impl ZulipConfig {
@@ -43,7 +44,7 @@ impl Zulip {
         .await
     }
 
-    async fn post_sandbag_msg<T: IntoUrl + Copy>(&self, url: T, msg: String) -> Response {
+    async fn post_sandbag_msg(&self, msg: String) -> Response {
         let params = [
             ("type", "stream"),
             ("to", &self.config.channel),
@@ -52,7 +53,9 @@ impl Zulip {
         ];
         req(
             &self.http,
-            self.http.post(url).form(&params),
+            self.http
+                .post(format!("{}/api/v1/messages", self.config.site))
+                .form(&params),
             &self.config.auth(),
         )
         .await
@@ -69,7 +72,7 @@ impl Zulip {
         let arena_id = &arena.id;
         let arena_fullname = &arena.full_name;
         let perf = &arena.perf.key;
-        let body = format!("
+        let msg = format!("
 **{user_id} ({user_rating})**
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
 *Quick {perf} losses*:
@@ -83,7 +86,8 @@ impl Zulip {
             g.moves)
         ).collect::<String>()
     );
-        debug!("body sent to zulip: {body}")
+        debug!("body sent to zulip: {msg}");
+        self.post_sandbag_msg(msg).await;
     }
     //  f"[{round(SusGame['Moves']/2)}](<https://lichess.org/{SusGame['ID']}{'' if SusGame['UserIsWhite'] else '/black'}#{SusGame['Moves']}>), "
     //  f"...., [short games](<https://lichess.org/@/{UserID.lower()}/search?turnsMax=20&perf={PerfMap[ArenaVariant]}&mode=1&players.a={UserID.lower()}&players.loser={UserID.lower()}&sort.field=t&sort.order=asc>), "

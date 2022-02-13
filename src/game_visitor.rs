@@ -54,7 +54,7 @@ pub struct MoveCounter {
 }
 
 impl MoveCounter {
-    fn new(user_id: String) -> Self {
+    pub fn new(user_id: String) -> Self {
         Self {
             user_id,
             games: vec![],

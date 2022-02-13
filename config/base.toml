@@ -4,5 +4,6 @@ debug = true
 [zulip]
 email = "xxx@xxx.com"
 key = "xxxxxx"
+site = "hxxps://YOUR_ZULIP_DOMAIN.com"
 channel = "mod-hunter-boost"
 topic = "sandbag-bot"
