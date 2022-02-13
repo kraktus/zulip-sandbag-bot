@@ -2,7 +2,7 @@ use chrono::serde::ts_milliseconds;
 use chrono::{DateTime, Utc};
 use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
 
-use reqwest::{Client, IntoUrl, Response};
+use reqwest::{IntoUrl, Response};
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -11,18 +11,14 @@ use tokio::io::AsyncBufReadExt as _;
 use tokio_stream::wrappers::LinesStream;
 use tokio_util::io::StreamReader;
 
-use tokio::{
-    sync::{watch, RwLock},
-    task::JoinHandle,
-    time::{sleep, timeout},
-};
+use tokio::time::timeout;
 
 use std::io;
-use std::time::Duration;
 use std::str::FromStr;
+use std::time::Duration;
 
 use crate::game_visitor::get_games;
-use crate::game_visitor::{GameResult, MoveCounter};
+use crate::game_visitor::MoveCounter;
 use crate::score::SUS_SCORE;
 use crate::util::{log_and_pass, req};
 use crate::zulip::Zulip;

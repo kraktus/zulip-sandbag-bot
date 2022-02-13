@@ -2,10 +2,6 @@ use futures_util::stream::StreamExt as _;
 use log::{error, warn};
 use reqwest::{Client, Error, RequestBuilder, Response};
 
-use std::env;
-
-use std::path::PathBuf;
-
 use tokio::time::{sleep, Duration};
 
 use std::cmp::min;
