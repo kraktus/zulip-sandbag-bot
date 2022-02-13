@@ -18,9 +18,11 @@ use crate::game_visitor::get_games;
 use crate::game_visitor::{GameResult, MoveCounter};
 use crate::score::SUS_SCORE;
 use crate::util::{log_and_pass, req};
+use crate::zulip::Zulip;
+use crate::Settings;
 
 pub struct Lichess {
-    http: Client,
+    zulip: Zulip,
     token: Option<String>,
 }
 
@@ -95,18 +97,23 @@ impl User {
 }
 
 impl Lichess {
-    pub fn new(token: Option<String>) -> Self {
+    pub fn new(settings: Settings) -> Self {
         Self {
-            http: Client::new(),
-            token,
+            zulip: Zulip::new(settings.zulip.clone()),
+            token: settings.lichess_token,
         }
     }
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
-        req(&self.http, self.http.post(url).body(body), &self.token).await
+        req(
+            &self.zulip.http,
+            self.zulip.http.post(url).body(body),
+            &self.token,
+        )
+        .await
     }
 
     async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
-        req(&self.http, self.http.get(url), &self.token).await
+        req(&self.zulip.http, self.zulip.http.get(url), &self.token).await
     }
 
     pub async fn get_arenas(&self) -> Arenas {
@@ -185,24 +192,22 @@ impl Lichess {
             let mut stream = self.get_players(&arena).await;
             while let Some(player) = stream.next().await {
                 if preselect_player(&arena, &player) {
-                    let sus_games: Vec<(String, GameResult)> = self
+                    let sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
-                        .games
-                        .into_iter()
-                        .filter(|(_id, game_res)| game_res.moves < 30 && !game_res.won)
-                        .collect();
+                        .games;
                     print!("{sus_games:?}");
+                    let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
                     if SUS_SCORE
                         .high
                         .perf(&arena.schedule.speed)
                         .map(|score| score <= player.score)
                         .unwrap_or(false)
                     {
-                        todo!() // send to zulip if arena sort by itself is enough
-                    }
-                    let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
-                    if user
+                        self.zulip
+                            .post_report(&player.username, &arena, sus_games)
+                            .await; // send to zulip if arena sort by itself is enough
+                    } else if user
                         .get(&player.username)
                         .map(User::is_new)
                         .unwrap_or(false)
@@ -215,9 +220,10 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        todo!()
-                    }
-                    if user
+                        self.zulip
+                            .post_report(&player.username, &arena, sus_games)
+                            .await;
+                    } else if user
                         .get(&player.username)
                         .map(User::is_very_new) // different than above
                         .unwrap_or(false)
@@ -230,7 +236,9 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        todo!()
+                        self.zulip
+                            .post_report(&player.username, &arena, sus_games)
+                            .await;
                     }
                 }
             }

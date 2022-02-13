@@ -15,7 +15,7 @@ use crate::setting::Settings;
 #[tokio::main]
 async fn main() {
     let mut builder = Builder::new();
-    let s = Settings::new().expect("acceptable config");
+    let s = Settings::new().expect("syntaxically correct config");
     print!("{s:?}");
     builder
         .filter(
@@ -29,7 +29,7 @@ async fn main() {
         .default_format()
         .target(Target::Stdout)
         .init();
-    let lichess = Lichess::new(s.lichess_token);
+    let lichess = Lichess::new(s);
     // let arenas = lichess.get_arenas().await;
     // let mut stream = lichess.get_players(&arenas.finished[0]).await;
     // while let Some(player) = stream.next().await {

@@ -4,10 +4,12 @@ use std::collections::HashMap;
 
 type GameId = String;
 
-#[derive(Debug, Hash, Copy, Clone)]
+#[derive(Debug, Hash, Clone)]
 pub struct GameResult {
+    pub id: String,
     pub moves: usize,
     pub won: bool,
+    pub is_white: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -36,8 +38,10 @@ impl TryInto<GameResult> for TempGame {
 
     fn try_into(self) -> Result<GameResult, Self::Error> {
         Ok(GameResult {
+            id: self.id.ok_or(TempGameError)?,
             moves: self.counter,
             won: self.won.ok_or(TempGameError)?,
+            is_white: self.is_white.ok_or(TempGameError)?,
         })
     }
 }
@@ -45,7 +49,7 @@ impl TryInto<GameResult> for TempGame {
 #[derive(Debug)]
 pub struct MoveCounter {
     pub user_id: String,
-    pub games: HashMap<GameId, GameResult>,
+    pub games: Vec<GameResult>,
     temp: TempGame,
 }
 
@@ -53,7 +57,7 @@ impl MoveCounter {
     fn new(user_id: String) -> Self {
         Self {
             user_id,
-            games: HashMap::new(),
+            games: vec![],
             temp: TempGame::default(),
         }
     }
@@ -96,13 +100,11 @@ impl Visitor for MoveCounter {
     }
 
     fn end_game(&mut self) -> Self::Result {
-        self.temp.clone().id.as_ref().map(|id| {
-            self.temp
-                .clone()
-                .try_into()
-                .ok()
-                .map(|res| self.games.insert(id.clone(), res))
-        });
+        self.temp
+            .clone()
+            .try_into()
+            .ok()
+            .map(|res| self.games.push(res));
     }
 }
 
