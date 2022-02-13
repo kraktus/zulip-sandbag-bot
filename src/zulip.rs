@@ -52,7 +52,7 @@ impl Zulip {
             ("topic", &self.config.topic),
             ("content", &msg),
         ];
-        debug!("{params:?}");
+        trace!("Zulip request parameters: {params:?}");
         req(
             &self.http,
             self.http
