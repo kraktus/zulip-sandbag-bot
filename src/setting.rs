@@ -13,10 +13,13 @@ struct Api {
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
 pub struct Settings {
+    #[serde(default = "as_true")]
     debug: bool,
     zulip: Api,
     lichess_token: String,
 }
+
+fn as_true() -> bool { true }
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
@@ -29,10 +32,6 @@ impl Settings {
         // Add in settings from the environment (with a prefix of APP)
         // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
         s.merge(Environment::with_prefix("app"))?;
-
-        // Now that we're done, let's access our configuration
-        println!("debug: {:?}", s.get_bool("debug"));
-        println!("database: {:?}", s.get::<String>("database.url"));
 
         // You can deserialize (and thus freeze) the entire configuration as
         s.deserialize()

@@ -1,0 +1,6 @@
+lichess_token = "xxxx"
+
+[zulip]
+email = "xxx@xxx.com"
+key = "xxxxxx"
+site = "https://xxxx.zulipchat.com"

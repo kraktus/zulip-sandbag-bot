@@ -10,10 +10,13 @@ mod util;
 mod zulip;
 
 use crate::lichess::Lichess;
+use crate::setting::Settings;
 
 #[tokio::main]
 async fn main() {
     let mut builder = Builder::new();
+    let s = Settings::new();
+    print!("{s:?}");
     builder
         .filter(None, LevelFilter::Trace)
         .default_format()
