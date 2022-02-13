@@ -97,6 +97,13 @@ impl User {
 }
 
 impl Lichess {
+
+    pub fn new(token: Option<String>) -> Self {
+        Self {
+            http: Client::new(),
+            token,
+        }
+    }
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
         req(&self.http, self.http.post(url).body(body), &self.token).await
     }
@@ -230,17 +237,6 @@ impl Lichess {
                     }
                 }
             }
-        }
-    }
-}
-
-impl Default for Lichess {
-    fn default() -> Self {
-        Self {
-            http: Client::new(),
-            token: fs::read(repo_dir().join("LICHESS_TOKEN.txt"))
-                .map(|s| String::from_utf8_lossy(&s).to_string())
-                .ok(),
         }
     }
 }

@@ -1,4 +1,5 @@
-lichess_token = "xxxx"
+lichess_token = "xxxx" # optional
+debug = true
 
 [zulip]
 email = "xxx@xxx.com"

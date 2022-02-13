@@ -3,20 +3,15 @@
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-struct Api {
-    // zulip
-    email: String,
-    key: String,
-}
+use crate::zulip::Zuliprc;
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
 pub struct Settings {
     #[serde(default = "as_true")]
-    debug: bool,
-    zulip: Api,
-    lichess_token: String,
+    pub debug: bool,
+    pub zulip: Zuliprc,
+    pub lichess_token: Option<String>,
 }
 
 fn as_true() -> bool { true }

@@ -7,41 +7,22 @@ use std::collections::HashMap;
 use tokio::io::AsyncBufReadExt as _;
 
 use std::fs::File;
+use serde::Deserialize;
 
 use crate::util::repo_dir;
 use crate::util::req;
 use std::io::BufRead;
 use std::io::BufReader;
 
-struct Zuliprc {
+#[derive(Debug, Deserialize, Clone)]
+pub struct Zuliprc {
     email: String,
-    api_key: String,
-}
-
-impl Default for Zuliprc {
-    fn default() -> Self {
-        let file = File::open(repo_dir().join("zuliprc.txt")).expect("zuliprc.txt at repo root");
-        let reader = BufReader::new(file);
-        let mut hash_map: HashMap<String, String> = HashMap::new();
-
-        reader.lines().into_iter().for_each(|l| {
-            l.unwrap()
-                .split_once("=")
-                .map(|(a, b)| hash_map.insert(a.to_string(), b.to_string()));
-        });
-        Self {
-            email: hash_map
-                .get("email")
-                .expect("email section in zuliprc")
-                .clone(),
-            api_key: hash_map.get("key").expect("key section in zuliprc").clone(),
-        }
-    }
+    key: String,
 }
 
 impl Zuliprc {
     fn auth(&self) -> Option<String> {
-        Some(format!("{}:{}", self.email, self.api_key))
+        Some(format!("{}:{}", self.email, self.key))
     }
 }
 
