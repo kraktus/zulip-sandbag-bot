@@ -50,7 +50,7 @@ impl Zulip {
             ("type", "stream"),
             ("to", &self.config.channel),
             ("topic", &self.config.topic),
-            ("content", &msg),
+            ("content", msg),
         ];
         trace!("Zulip request parameters: {params:?}");
         req(

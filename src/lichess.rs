@@ -156,8 +156,7 @@ impl Lichess {
             self.post(
                 "https://lichess.org/api/users",
                 user_ids
-                    .into_iter()
-                    .map(|s| *s)
+                    .iter().copied()
                     .take(300)
                     .collect::<String>(),
             )
@@ -195,9 +194,9 @@ impl Lichess {
             .iter()
             .filter(|a| a.has_max_rating)
         {
-            let mut stream = self.get_players(&arena).await;
+            let mut stream = self.get_players(arena).await;
             while let Some(player) = stream.next().await {
-                if preselect_player(&arena, &player) {
+                if preselect_player(arena, &player) {
                     let mut sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
@@ -212,7 +211,7 @@ impl Lichess {
                         .map(|score| score <= player.score)
                         .unwrap_or(false)
                     {
-                        self.zulip.post_report(&player, &arena, sus_games).await;
+                        self.zulip.post_report(&player, arena, sus_games).await;
                     // send to zulip if arena sort by itself is enough
                     } else if user
                         .get(&player.username)
@@ -227,7 +226,7 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        self.zulip.post_report(&player, &arena, sus_games).await;
+                        self.zulip.post_report(&player, arena, sus_games).await;
                     } else if user
                         .get(&player.username)
                         .map(User::is_very_new) // different than above
@@ -241,7 +240,7 @@ impl Lichess {
                             })
                             .unwrap_or(false)
                     {
-                        self.zulip.post_report(&player, &arena, sus_games).await;
+                        self.zulip.post_report(&player, arena, sus_games).await;
                     }
                 }
             }
