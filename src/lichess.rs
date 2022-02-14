@@ -185,6 +185,10 @@ impl Lichess {
         todo!()
     }
 
+    pub async fn on_start(&self) {
+        self.zulip.start_message().await
+    }
+
     pub async fn watch(&self) {
         for arena in self
             .get_arenas()

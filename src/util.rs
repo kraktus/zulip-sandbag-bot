@@ -54,3 +54,13 @@ async fn req_inner(
     }
     builder.send().await.map(Response::error_for_status)?
 }
+
+pub fn perf_to_index(s: &str) -> Option<u8> {
+    match s {
+        "bullet" => Some(1),
+        "blitz" => Some(2),
+        "classical" => Some(3),
+        "rapid" => Some(6),
+        _ => None
+    }
+}

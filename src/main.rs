@@ -31,6 +31,7 @@ async fn main() {
         .target(Target::Stdout)
         .init();
     let lichess = Lichess::new(s.clone());
+    lichess.on_start().await;
     // let arenas = lichess.get_arenas().await;
     // let mut stream = lichess.get_players(&arenas.finished[0]).await;
     // while let Some(player) = stream.next().await {
