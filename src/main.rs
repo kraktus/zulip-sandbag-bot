@@ -46,9 +46,9 @@ async fn main() {
     tokio::spawn(async {
         // Process each socket concurrently.
         sleep(Duration::from_millis(10 * 1000)).await;
-        print!("2. In spawn, after 10s");
+        println!("2. In spawn, after 10s");
     });
-    print!("1. Off spawn");
+    println!("1. Off spawn");
     sleep(Duration::from_millis(15 * 1000)).await;
-    print!("3. Off spawn, after 15s");
+    println!("3. Off spawn, after 15s");
 }
