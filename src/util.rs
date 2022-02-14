@@ -61,6 +61,6 @@ pub fn perf_to_index(s: &str) -> Option<u8> {
         "blitz" => Some(2),
         "classical" => Some(3),
         "rapid" => Some(6),
-        _ => None
+        _ => None,
     }
 }

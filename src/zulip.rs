@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::game_visitor::GameResult;
 use crate::lichess::{Arena, Player};
-use crate::util::{req, Auth, perf_to_index};
+use crate::util::{perf_to_index, req, Auth};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ZulipConfig {
@@ -64,7 +64,9 @@ impl Zulip {
         let arena_id = &arena.id;
         let arena_fullname = &arena.full_name;
         let perf = &arena.perf.key;
-        let perf_index = perf_to_index(perf).map(|x| x.to_string()).unwrap_or_else(|| "?".to_string());
+        let perf_index = perf_to_index(perf)
+            .map(|x| x.to_string())
+            .unwrap_or_else(|| "?".to_string());
         let msg = format!("
 **[{user_id} ({user_rating})](https://lichess.org/@/{user_id})**
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
