@@ -1,4 +1,4 @@
-use reqwest::{Client, IntoUrl, Response};
+use reqwest::{Client, Response};
 
 use log::{debug, trace};
 use serde::Deserialize;
