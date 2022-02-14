@@ -11,7 +11,7 @@ pub struct GameResult {
     pub is_white: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct TempGame {
     pub id: Option<GameId>,
     pub counter: usize,
@@ -19,16 +19,6 @@ struct TempGame {
     pub is_white: Option<bool>,
 }
 
-impl Default for TempGame {
-    fn default() -> Self {
-        Self {
-            id: None,
-            counter: 0,
-            won: None,
-            is_white: None,
-        }
-    }
-}
 #[derive(Debug, Hash, Copy, Clone)]
 struct TempGameError;
 
