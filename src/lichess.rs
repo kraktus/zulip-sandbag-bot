@@ -155,10 +155,7 @@ impl Lichess {
         HashMap::from_iter(
             self.post(
                 "https://lichess.org/api/users",
-                user_ids
-                    .iter().copied()
-                    .take(300)
-                    .collect::<String>(),
+                user_ids.iter().copied().take(300).collect::<String>(),
             )
             .await
             .json::<Vec<User>>()

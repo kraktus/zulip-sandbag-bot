@@ -99,10 +99,9 @@ impl Visitor for MoveCounter {
     }
 
     fn end_game(&mut self) -> Self::Result {
-        if let Ok(res) = self.temp
-            .clone()
-            .try_into()
-             { self.games.push(res) }
+        if let Ok(res) = self.temp.clone().try_into() {
+            self.games.push(res)
+        }
     }
 }
 
