@@ -3,14 +3,14 @@
 //    LowScore    = {"bullet": 30, "superBlitz": 30, "blitz": 25, "rapid": 20}
 
 pub struct Score {
-    pub bullet: usize,
-    pub super_blitz: usize,
-    pub blitz: usize,
-    pub rapid: usize,
+    pub bullet: u16,
+    pub super_blitz: u16,
+    pub blitz: u16,
+    pub rapid: u16,
 }
 
 impl Score {
-    pub fn perf(&self, perf: &str) -> Option<usize> {
+    pub fn perf(&self, perf: &str) -> Option<u16> {
         match perf {
             "bullet" => Some(self.bullet),
             "superBlitz" => Some(self.super_blitz),

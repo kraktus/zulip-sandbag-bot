@@ -62,9 +62,9 @@ pub struct Arena {
 }
 
 impl Arena {
-    pub fn rating_limit(&self) -> Option<usize> {
+    pub fn rating_limit(&self) -> Option<u16> {
         if self.has_max_rating {
-            usize::from_str(&self.full_name[1..5]).ok()
+            u16::from_str(&self.full_name[1..5]).ok()
         } else {
             None
         }
@@ -74,11 +74,11 @@ impl Arena {
 // {"rank":2,"score":57,"rating":2611,"username":"xxx","performance":2462}
 #[derive(Deserialize, Debug)]
 pub struct Player {
-    pub rank: usize,
-    pub score: usize,
-    pub rating: usize,
+    pub rank: u16,
+    pub score: u16,
+    pub rating: u16,
     pub username: String,
-    pub performance: Option<usize>,
+    pub performance: Option<u16>,
 }
 
 #[derive(Deserialize, Debug)]
