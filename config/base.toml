@@ -1,5 +1,6 @@
 # lichess_token = "xxxx" # optional
 debug = true
+sleep_time = 1 # time in seconds, between two calls
 
 [zulip]
 email = "xxx@xxx.com"

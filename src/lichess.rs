@@ -13,7 +13,7 @@ use tokio_util::io::StreamReader;
 
 use tokio::time::timeout;
 
-use log::debug;
+use log::info;
 
 use std::io;
 use std::str::FromStr;
@@ -181,15 +181,12 @@ impl Lichess {
         Some(get_games(games, user_id))
     }
 
-    async fn send_player(_arena: &Arena, _player: &Player) {
-        todo!()
-    }
-
     pub async fn on_start(&self) {
         self.zulip.start_message().await
     }
 
     pub async fn watch(&self) {
+        info!("Start screening recent arenas");
         for arena in self
             .get_arenas()
             .await
@@ -247,7 +244,7 @@ impl Lichess {
                 }
             }
         }
-        debug!("Finished screening recent arenas")
+        info!("Finished screening recent arenas")
     }
 }
 
