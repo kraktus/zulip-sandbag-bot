@@ -1,6 +1,6 @@
 use reqwest::{Client, IntoUrl, Response};
 
-use log::debug;
+use log::{debug, trace};
 use serde::Deserialize;
 
 use crate::game_visitor::GameResult;

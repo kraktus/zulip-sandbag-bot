@@ -12,9 +12,10 @@ mod zulip;
 use crate::lichess::Lichess;
 use crate::setting::Settings;
 
+use tokio::time::{sleep, Duration};
 
-#[tokio::main]
-async fn main() {
+// #[tokio::main]
+async fn main_() {
     let mut builder = Builder::new();
     let s = Settings::new().expect("syntaxically correct config");
     builder
@@ -38,4 +39,16 @@ async fn main() {
     lichess.watch().await;
     // let z = Zulip::new(s.zulip);
     // z.post_sandbag_msg("test").await;
+}
+
+#[tokio::main]
+async fn main() {
+    tokio::spawn(async {
+        // Process each socket concurrently.
+        sleep(Duration::from_millis(10 * 1000)).await;
+        print!("2. In spawn, after 10s");
+    });
+    print!("1. Off spawn");
+    sleep(Duration::from_millis(15 * 1000)).await;
+    print!("3. Off spawn, after 15s");
 }
