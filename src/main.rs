@@ -14,8 +14,8 @@ use crate::setting::Settings;
 
 use tokio::time::{sleep, Duration};
 
-// #[tokio::main]
-async fn main_() {
+#[tokio::main]
+async fn main() {
     let mut builder = Builder::new();
     let s = Settings::new().expect("syntaxically correct config");
     builder
@@ -39,16 +39,4 @@ async fn main_() {
     lichess.watch().await;
     // let z = Zulip::new(s.zulip);
     // z.post_sandbag_msg("test").await;
-}
-
-#[tokio::main]
-async fn main() {
-    tokio::spawn(async {
-        // Process each socket concurrently.
-        sleep(Duration::from_millis(10 * 1000)).await;
-        println!("2. In spawn, after 10s");
-    });
-    println!("1. Off spawn");
-    sleep(Duration::from_millis(15 * 1000)).await;
-    println!("3. Off spawn, after 15s");
 }
