@@ -2,8 +2,8 @@
 
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
-use std::time::Duration;
 use serde_with::{serde_as, DurationSeconds};
+use std::time::Duration;
 
 use crate::zulip::ZulipConfig;
 
@@ -21,7 +21,6 @@ pub struct Settings {
 fn as_true() -> bool {
     true
 }
-
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
