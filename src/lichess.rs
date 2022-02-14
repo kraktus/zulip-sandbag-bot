@@ -13,6 +13,8 @@ use tokio_util::io::StreamReader;
 
 use tokio::time::timeout;
 
+use log::debug;
+
 use std::io;
 use std::str::FromStr;
 use std::time::Duration;
@@ -200,7 +202,6 @@ impl Lichess {
                         .unwrap_or_else(|| MoveCounter::new(player.username.clone()))
                         .games;
                     sus_games.sort_by(|a, b| a.moves.cmp(&b.moves));
-                    print!("{sus_games:?}");
                     let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
                     if SUS_SCORE
                         .high
@@ -242,6 +243,7 @@ impl Lichess {
                 }
             }
         }
+        debug!("Finished screening recent arenas")
     }
 }
 

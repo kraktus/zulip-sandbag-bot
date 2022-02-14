@@ -35,17 +35,7 @@ impl Zulip {
         }
     }
 
-    async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
-        req(
-            &self.http,
-            self.http.post(url).body(body),
-            &self.config.auth(),
-        )
-        .await
-    }
-
-    pub async fn post_sandbag_msg(&self, msg: &str) -> Response {
-        // DEBUG set as public
+    async fn post_sandbag_msg(&self, msg: &str) -> Response {
         let params = [
             ("type", "stream"),
             ("to", &self.config.channel),
@@ -63,10 +53,6 @@ impl Zulip {
         .await
     }
 
-    async fn get<T: IntoUrl + Copy>(&self, url: T) -> Response {
-        req(&self.http, self.http.get(url), &self.config.auth()).await
-    }
-
     pub async fn post_report(&self, player: &Player, arena: &Arena, games: Vec<GameResult>) {
         let user_id = &player.username;
         let user_rating = &player.rating;
@@ -79,8 +65,8 @@ impl Zulip {
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
 *Quick {perf} losses*:
 {}...
-[short games](<https://lichess.org/@/{user_id}/search?turnsMax=20&perf={perf}&mode=1&players.a={user_id}&players.loser={user_id}&sort.field=t&sort.order=asc)
-[all games](<https://lichess.org/mod/{user_id}/games?speed={perf}>)", games.iter().take(6).map(
+[short games](https://lichess.org/@/{user_id}/search?turnsMax=20&perf={perf}&mode=1&players.a={user_id}&players.loser={user_id}&sort.field=t&sort.order=asc)
+[all games](https://lichess.org/mod/{user_id}/games?speed={perf})", games.iter().take(6).map(
         |g| format!("[{}](<https://lichess.org/{}{}#{}>),", 
             g.moves / 2,
             g.id,
