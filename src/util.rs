@@ -17,7 +17,7 @@ pub enum Auth {
     Bearer(String),
 }
 
-pub async fn req(client: &Client, builder: RequestBuilder, authOpt: &Option<Auth>) -> Response {
+pub async fn req(client: &Client, builder: RequestBuilder, auth_opt: &Option<Auth>) -> Response {
     let backoff_factor = 10;
     let mut sleep_time = Duration::from_secs(60);
     let max_sleep = Duration::from_secs(3600);
@@ -25,7 +25,7 @@ pub async fn req(client: &Client, builder: RequestBuilder, authOpt: &Option<Auth
         match req_inner(
             client,
             builder.try_clone().expect("No streaming body"),
-            authOpt,
+            auth_opt,
         )
         .await
         {
@@ -44,9 +44,9 @@ pub async fn req(client: &Client, builder: RequestBuilder, authOpt: &Option<Auth
 async fn req_inner(
     _client: &Client,
     mut builder: RequestBuilder,
-    authOpt: &Option<Auth>,
+    auth_opt: &Option<Auth>,
 ) -> Result<Response, Error> {
-    if let Some(auth) = authOpt {
+    if let Some(auth) = auth_opt {
         match auth {
             Auth::Bearer(token) => builder = builder.bearer_auth(token),
             Auth::Basic(username, pwd) => builder = builder.basic_auth(&username, Some(&pwd)),
