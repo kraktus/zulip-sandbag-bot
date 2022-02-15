@@ -35,6 +35,6 @@ impl Settings {
         s.merge(Environment::with_prefix("app"))?;
 
         // You can deserialize (and thus freeze) the entire configuration as
-        s.deserialize()
+        s.try_into()
     }
 }

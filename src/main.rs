@@ -1,5 +1,4 @@
 use env_logger::{Builder, Target};
-use futures_util::StreamExt;
 use log::LevelFilter;
 
 mod game_visitor;
