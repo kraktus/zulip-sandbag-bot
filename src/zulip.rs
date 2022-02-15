@@ -77,7 +77,7 @@ impl Zulip {
         |g| format!("[{}](<https://lichess.org/{}{}#{}>),", 
             g.moves / 2,
             g.id,
-            if !g.is_white {"black"} else {""},
+            if !g.is_white {"/black"} else {""},
             g.moves)
         ).collect::<String>()
     );
