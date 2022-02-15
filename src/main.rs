@@ -11,7 +11,7 @@ mod zulip;
 use crate::lichess::Lichess;
 use crate::setting::Settings;
 
-use tokio::time::{sleep};
+use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
