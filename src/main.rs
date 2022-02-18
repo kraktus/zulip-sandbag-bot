@@ -1,5 +1,5 @@
 use env_logger::{Builder, Target};
-use log::LevelFilter;
+use log::{LevelFilter, info};
 
 mod game_visitor;
 mod lichess;
@@ -34,6 +34,7 @@ async fn main() {
     lichess.on_start().await;
     loop {
         lichess.watch().await;
+        info!("Waiting {:?} before screening Arenas again.", &s.sleep_time);
         sleep(s.sleep_time).await;
     }
 }
