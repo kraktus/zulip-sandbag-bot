@@ -11,6 +11,7 @@ pub fn log_and_pass<T: StdError>(err: T) -> T {
     err
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Auth {
     Basic(String, String),
     Bearer(String),

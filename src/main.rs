@@ -33,7 +33,7 @@ async fn main() {
     let lichess = Lichess::new(s.clone());
     lichess.on_start().await;
     loop {
-        sleep(s.sleep_time).await;
         lichess.watch().await;
+        sleep(s.sleep_time).await;
     }
 }
