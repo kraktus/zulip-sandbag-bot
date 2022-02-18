@@ -15,6 +15,7 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
+    // comment test CI build
     let mut builder = Builder::new();
     let s = Settings::new().expect("syntaxically correct config");
     builder
