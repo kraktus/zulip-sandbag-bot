@@ -34,7 +34,7 @@ async fn main() {
     lichess.on_start().await;
     loop {
         lichess.watch().await;
-        info!("Waiting {:?} before screening Arenas again.", &s.sleep_time);
+        debug!("Waiting {:?} before screening Arenas again.", &s.sleep_time);
         sleep(s.sleep_time).await;
     }
 }

@@ -187,7 +187,7 @@ impl Lichess {
 
     #[allow(clippy::blocks_in_if_conditions)] // conflicts with `rustfmt` https://github.com/rust-lang/rust-clippy/issues/8099
     pub async fn watch(&self) {
-        info!("Start screening recent arenas");
+        debug!("Start screening recent arenas");
         for arena in self
             .get_arenas()
             .await
@@ -245,7 +245,7 @@ impl Lichess {
                 }
             }
         }
-        info!("Finished screening recent arenas")
+        debug!("Finished screening recent arenas")
     }
 }
 
