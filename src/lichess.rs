@@ -31,26 +31,26 @@ pub struct Lichess {
     token: Option<Auth>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Arenas {
     pub created: Vec<Arena>,
     pub finished: Vec<Arena>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Perf {
     pub key: String, // TODO use enum instead
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct Schedule {
     pub freq: String,
     pub speed: String,
 }
 
 // schedule":{"freq":"hourly","speed":"hyperBullet"}
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Arena {
     pub id: String,
@@ -64,7 +64,8 @@ pub struct Arena {
 impl Arena {
     pub fn rating_limit(&self) -> Option<u16> {
         if self.has_max_rating {
-            u16::from_str(&self.full_name[1..5]).ok()
+            // safer version of &self.full_name[1..5]
+            u16::from_str(&self.full_name.chars().skip(1).take(4).collect::<String>()).ok()
         } else {
             None
         }
@@ -254,4 +255,17 @@ fn preselect_player(arena: &Arena, player: &Player) -> bool {
         .perf(&arena.schedule.speed)
         .map(|score| score <= player.score)
         .unwrap_or(false)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_arena_rating_limit() {
+        let mut a = Arena::default();
+        a.has_max_rating = true;
+        a.full_name = "≤1500 Blitz Arena".to_string();
+        assert_eq!(a.rating_limit(), Some(1500));
+    }
 }

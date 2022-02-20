@@ -1,5 +1,5 @@
 use env_logger::{Builder, Target};
-use log::{LevelFilter, debug};
+use log::{debug, LevelFilter};
 
 mod game_visitor;
 mod lichess;
