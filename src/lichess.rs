@@ -198,12 +198,11 @@ impl Lichess {
             let mut stream = self.get_players(arena).await;
             while let Some(player) = stream.next().await {
                 if preselect_player(arena, &player) {
-                    let mut sus_games = self
+                    let sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
                         .unwrap_or_else(|| MoveCounter::new(player.username.clone()))
-                        .games;
-                    sus_games.sort_by(|a, b| a.moves.cmp(&b.moves));
+                        .get_sorted_sus_games();
                     let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
                     if SUS_SCORE
                         .high

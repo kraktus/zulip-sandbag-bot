@@ -50,6 +50,12 @@ impl MoveCounter {
             temp: TempGame::default(),
         }
     }
+
+    pub fn get_sorted_sus_games(&self) -> Vec<GameResult> {
+        let mut sus_games: Vec<GameResult> = self.games.clone().into_iter().filter(|g| !g.won).collect();
+        sus_games.sort_by(|a, b| a.moves.cmp(&b.moves));
+        sus_games
+    }
 }
 
 impl Visitor for MoveCounter {
