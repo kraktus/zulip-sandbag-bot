@@ -13,7 +13,7 @@ use tokio_util::io::StreamReader;
 
 use tokio::time::timeout;
 
-use log::info;
+use log::debug;
 
 use std::io;
 use std::str::FromStr;
