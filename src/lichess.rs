@@ -1,30 +1,21 @@
-use chrono::serde::ts_milliseconds;
-use chrono::{DateTime, Utc};
-use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
+use std::{collections::HashMap, io, str::FromStr, time::Duration};
 
+use chrono::{serde::ts_milliseconds, DateTime, Utc};
+use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
+use log::debug;
 use reqwest::{IntoUrl, Response};
 use serde::Deserialize;
-use std::collections::HashMap;
-
-use tokio::io::AsyncBufReadExt as _;
-
+use tokio::{io::AsyncBufReadExt as _, time::timeout};
 use tokio_stream::wrappers::LinesStream;
 use tokio_util::io::StreamReader;
 
-use tokio::time::timeout;
-
-use log::debug;
-
-use std::io;
-use std::str::FromStr;
-use std::time::Duration;
-
-use crate::game_visitor::get_games;
-use crate::game_visitor::MoveCounter;
-use crate::score::SUS_SCORE;
-use crate::util::{log_and_pass, req, Auth};
-use crate::zulip::Zulip;
-use crate::Settings;
+use crate::{
+    game_visitor::{get_games, MoveCounter},
+    score::SUS_SCORE,
+    util::{log_and_pass, req, Auth},
+    zulip::Zulip,
+    Settings,
+};
 
 pub struct Lichess {
     zulip: Zulip,

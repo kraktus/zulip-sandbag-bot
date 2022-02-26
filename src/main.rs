@@ -8,10 +8,9 @@ mod setting;
 mod util;
 mod zulip;
 
-use crate::lichess::Lichess;
-use crate::setting::Settings;
-
 use tokio::time::sleep;
+
+use crate::{lichess::Lichess, setting::Settings};
 
 #[tokio::main]
 async fn main() {

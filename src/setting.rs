@@ -1,9 +1,10 @@
 // based on https://github.com/mehcode/config-rs/blob/0.11.0/examples/hierarchical-env/src/settings.rs
 
+use std::time::Duration;
+
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 use serde_with::{serde_as, DurationSeconds};
-use std::time::Duration;
 
 use crate::zulip::ZulipConfig;
 

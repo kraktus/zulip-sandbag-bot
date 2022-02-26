@@ -1,11 +1,12 @@
-use reqwest::{Client, Response};
-
 use log::{debug, trace};
+use reqwest::{Client, Response};
 use serde::Deserialize;
 
-use crate::game_visitor::GameResult;
-use crate::lichess::{Arena, Player};
-use crate::util::{perf_to_index, req, Auth};
+use crate::{
+    game_visitor::GameResult,
+    lichess::{Arena, Player},
+    util::{perf_to_index, req, Auth},
+};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ZulipConfig {

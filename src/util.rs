@@ -1,10 +1,8 @@
+use std::{cmp::min, error::Error as StdError};
+
 use log::{error, warn};
 use reqwest::{Client, Error, RequestBuilder, Response};
-
 use tokio::time::{sleep, Duration};
-
-use std::cmp::min;
-use std::error::Error as StdError;
 
 pub fn log_and_pass<T: StdError>(err: T) -> T {
     warn!("{err}");

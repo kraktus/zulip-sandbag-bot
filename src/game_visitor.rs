@@ -1,5 +1,6 @@
-use crate::util::log_and_pass;
 use pgn_reader::{BufferedReader, RawHeader, SanPlus, Skip, Visitor};
+
+use crate::util::log_and_pass;
 
 type GameId = String;
 
