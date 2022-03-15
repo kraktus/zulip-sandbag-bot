@@ -2,7 +2,7 @@ use std::{collections::HashMap, io, str::FromStr, time::Duration};
 
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
-use log::debug;
+use log::{debug, warn};
 use reqwest::{IntoUrl, Response};
 use serde::Deserialize;
 use tokio::{io::AsyncBufReadExt as _, time::timeout};
@@ -152,10 +152,16 @@ impl Lichess {
                 user_ids.iter().copied().take(300).collect::<String>(),
             )
             .await
-            .json::<Vec<User>>()
+            .json::<Vec<Option<User>>>()
             .await
             .expect("Valid JSON User decoding")
             .into_iter()
+            .filter_map(|x| {
+                if x.is_none() {
+                    warn!("Among {user_ids:?}, some didn't return proper JSON")
+                }
+                x
+            })
             .map(|u| ((&u.id).to_string(), u)),
         )
     }
