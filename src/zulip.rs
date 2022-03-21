@@ -1,4 +1,4 @@
-use log::{debug, trace};
+use log::{debug, info, trace};
 use reqwest::{Client, Response};
 use serde::Deserialize;
 
@@ -55,7 +55,9 @@ impl Zulip {
     }
 
     pub async fn start_message(&self) {
-        self.post_sandbag_msg("(re)starting!").await;
+        let start_message = format!("(re)starting! commit {}", env!("GIT_HASH"));
+        info!("{}", &start_message);
+        self.post_sandbag_msg(&start_message).await;
     }
 
     pub async fn post_report(&self, player: &Player, arena: &Arena, games: Vec<GameResult>) {
