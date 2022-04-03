@@ -168,10 +168,11 @@ impl Lichess {
     }
 
     pub async fn get_user_games(&self, user_id: &str, perf: &str) -> Option<MoveCounter> {
+        let last_6_months = (Utc::today() - chrono::Duration::days(180)).format("%Y-%m-%d");
         let games = timeout(
             Duration::from_secs(60),
             self.get(
-            &format!("https://lichess.org/api/games/user/{user_id}?max=100&rated=true&perfType={perf}&ongoing=false")
+            &format!("https://lichess.org/api/games/user/{user_id}?max=100&rated=true&perfType={perf}&ongoing=false&dateMin={last_6_months}")
         ),
         )
         .await.ok()?
@@ -272,8 +273,7 @@ mod test {
         assert_eq!(a.rating_limit(), Some(1500));
     }
 
-    #[tokio::test]
-    async fn test_get_user_info_closed_account() {
+    fn setup_lichess() -> Lichess {
         let mut builder = Builder::new();
         let s = Settings::new().expect("syntaxically correct config");
         builder
@@ -288,7 +288,20 @@ mod test {
             .default_format()
             .target(Target::Stdout)
             .init();
-        let l = Lichess::new(s);
-        l.get_users_info(&["Closed_Account"]).await;
+        Lichess::new(s)
     }
+
+    #[tokio::test]
+    async fn test_get_user_games() {
+        let l = setup_lichess();
+        l.get_user_games("german11", "bullet").await;
+    }
+
+
+    // #[tokio::test]
+    // async fn test_get_user_info_closed_account() {
+    //     let l = setup_lichess();
+    //     l.get_users_info(&["Closed_Account"]).await;
+    // }
+
 }
