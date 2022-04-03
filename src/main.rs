@@ -14,7 +14,6 @@ use crate::{lichess::Lichess, setting::Settings};
 
 #[tokio::main]
 async fn main() {
-    // comment test artefact fixed
     let mut builder = Builder::new();
     let s = Settings::new().expect("syntaxically correct config");
     builder

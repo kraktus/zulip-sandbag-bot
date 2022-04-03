@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, str::FromStr, time::Duration};
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
 use log::{debug, warn};
-use reqwest::{IntoUrl, Response};
+use reqwest::{Error, IntoUrl, Response};
 use serde::Deserialize;
 use tokio::{io::AsyncBufReadExt as _, time::timeout};
 use tokio_stream::wrappers::LinesStream;
@@ -145,25 +145,26 @@ impl Lichess {
         )
     }
 
-    pub async fn get_users_info(&self, user_ids: &[&str]) -> HashMap<String, User> {
-        HashMap::from_iter(
-            self.post(
-                "https://lichess.org/api/users",
-                user_ids.iter().copied().take(300).collect::<String>(),
-            )
-            .await
-            .json::<Vec<Option<User>>>()
-            .await
-            .expect("Valid JSON User decoding")
-            .into_iter()
-            .filter_map(|x| {
-                if x.is_none() {
-                    warn!("Among {user_ids:?}, some didn't return proper JSON")
-                }
-                x
-            })
-            .map(|u| ((&u.id).to_string(), u)),
+    pub async fn get_users_info(&self, user_ids: &[&str]) -> Result<HashMap<String, User>, Error> {
+        self.post(
+            "https://lichess.org/api/users",
+            user_ids.iter().copied().take(300).collect::<String>(),
         )
+        .await
+        .json::<Vec<User>>()
+        .await
+        .map_err(|err| {
+            warn!("{err}, requested user ids {user_ids:?}");
+            err
+        })
+        .map(|users| {
+            HashMap::from_iter(
+                users
+                    .into_iter()
+                    .map(|u| ((&u.id).to_string(), u))
+                    .into_iter(),
+            )
+        })
     }
 
     pub async fn get_user_games(&self, user_id: &str, perf: &str) -> Option<MoveCounter> {
@@ -201,43 +202,45 @@ impl Lichess {
                         .await
                         .unwrap_or_else(|| MoveCounter::new(player.username.clone()))
                         .get_sorted_sus_games();
-                    let user = self.get_users_info(&[&player.username]).await; // TODO use tokio spawn?
-                    if SUS_SCORE
-                        .high
-                        .perf(&arena.schedule.speed)
-                        .map(|score| score <= player.score)
-                        .unwrap_or(false)
-                    {
-                        self.zulip.post_report(&player, arena, sus_games).await;
-                    // send to zulip if arena sort by itself is enough
-                    } else if user
-                        .get(&player.username)
-                        .map(User::is_new)
-                        .unwrap_or(false)
-                        || sus_games.len() > 25
-                        || arena
-                            .rating_limit()
-                            .zip(player.performance)
-                            .map(|(r, performance)| {
-                                player.rating < r - 200 || performance > r + 500
-                            })
+                    if let Ok(user) = self.get_users_info(&[&player.username]).await {
+                        // TODO use tokio spawn?
+                        if SUS_SCORE
+                            .high
+                            .perf(&arena.schedule.speed)
+                            .map(|score| score <= player.score)
                             .unwrap_or(false)
-                    {
-                        self.zulip.post_report(&player, arena, sus_games).await;
-                    } else if user
-                        .get(&player.username)
-                        .map(User::is_very_new) // different than above
-                        .unwrap_or(false)
-                        || sus_games.len() > 30
-                        || arena
-                            .rating_limit()
-                            .zip(player.performance)
-                            .map(|(r, performance)| {
-                                player.rating < r - 300 || performance > r + 400
-                            })
+                        {
+                            self.zulip.post_report(&player, arena, sus_games).await;
+                        // send to zulip if arena sort by itself is enough
+                        } else if user
+                            .get(&player.username)
+                            .map(User::is_new)
                             .unwrap_or(false)
-                    {
-                        self.zulip.post_report(&player, arena, sus_games).await;
+                            || sus_games.len() > 25
+                            || arena
+                                .rating_limit()
+                                .zip(player.performance)
+                                .map(|(r, performance)| {
+                                    player.rating < r - 200 || performance > r + 500
+                                })
+                                .unwrap_or(false)
+                        {
+                            self.zulip.post_report(&player, arena, sus_games).await;
+                        } else if user
+                            .get(&player.username)
+                            .map(User::is_very_new) // different than above
+                            .unwrap_or(false)
+                            || sus_games.len() > 30
+                            || arena
+                                .rating_limit()
+                                .zip(player.performance)
+                                .map(|(r, performance)| {
+                                    player.rating < r - 300 || performance > r + 400
+                                })
+                                .unwrap_or(false)
+                        {
+                            self.zulip.post_report(&player, arena, sus_games).await;
+                        }
                     }
                 }
             }
@@ -257,6 +260,9 @@ fn preselect_player(arena: &Arena, player: &Player) -> bool {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::setting::Settings;
+    use env_logger::{Builder, Target};
+    use log::{debug, LevelFilter};
 
     #[test]
     fn test_arena_rating_limit() {
@@ -264,5 +270,25 @@ mod test {
         a.has_max_rating = true;
         a.full_name = "≤1500 Blitz Arena".to_string();
         assert_eq!(a.rating_limit(), Some(1500));
+    }
+
+    #[tokio::test]
+    async fn test_get_user_info_closed_account() {
+        let mut builder = Builder::new();
+        let s = Settings::new().expect("syntaxically correct config");
+        builder
+            .filter(
+                None,
+                if s.debug {
+                    LevelFilter::Debug
+                } else {
+                    LevelFilter::Info
+                },
+            )
+            .default_format()
+            .target(Target::Stdout)
+            .init();
+        let l = Lichess::new(s);
+        l.get_users_info(&["Closed_Account"]).await;
     }
 }
