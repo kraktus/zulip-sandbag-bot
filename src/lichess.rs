@@ -164,8 +164,7 @@ impl Lichess {
             HashMap::from_iter(
                 users
                     .into_iter()
-                    .map(|u| ((&u.id).to_string(), u))
-                    .into_iter(),
+                    .map(|u| ((&u.id).to_string(), u)),
             )
         })
     }
