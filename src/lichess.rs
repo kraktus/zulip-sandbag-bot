@@ -2,7 +2,7 @@ use std::{collections::HashMap, io, str::FromStr, time::Duration};
 
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use futures_util::stream::{Stream, StreamExt as _, TryStreamExt as _};
-use log::{debug, warn};
+use log::{debug, info, warn};
 use reqwest::{Error, IntoUrl, Response};
 use serde::Deserialize;
 use tokio::{io::AsyncBufReadExt as _, time::timeout};
@@ -11,7 +11,7 @@ use tokio_util::io::StreamReader;
 
 use crate::{
     game_visitor::{get_games, MoveCounter},
-    score::SUS_SCORE,
+    score::SusScore,
     util::{log_and_pass, req, Auth},
     zulip::Zulip,
     Settings,
@@ -20,6 +20,7 @@ use crate::{
 pub struct Lichess {
     zulip: Zulip,
     token: Option<Auth>,
+    sus_score: SusScore,
 }
 
 #[derive(Deserialize, Debug, Default)]
@@ -95,9 +96,11 @@ impl User {
 
 impl Lichess {
     pub fn new(settings: Settings) -> Self {
+        info!("Score threshold used for reporting: {:?}", settings.score);
         Self {
             zulip: Zulip::new(settings.zulip.clone()),
             token: settings.lichess_token.map(Auth::Bearer),
+            sus_score: settings.score,
         }
     }
     async fn post<T: IntoUrl + Copy>(&self, url: T, body: String) -> Response {
@@ -197,7 +200,7 @@ impl Lichess {
         {
             let mut stream = self.get_players(arena).await;
             while let Some(player) = stream.next().await {
-                if preselect_player(arena, &player) {
+                if self.preselect_player(arena, &player) {
                     let sus_games = self
                         .get_user_games(&player.username, &arena.perf.key)
                         .await
@@ -205,7 +208,8 @@ impl Lichess {
                         .get_sorted_sus_games();
                     if let Ok(user) = self.get_users_info(&[&player.username]).await {
                         // TODO use tokio spawn?
-                        if SUS_SCORE
+                        if self
+                            .sus_score
                             .high
                             .perf(&arena.schedule.speed)
                             .map(|score| score <= player.score)
@@ -248,14 +252,14 @@ impl Lichess {
         }
         debug!("Finished screening recent arenas")
     }
-}
 
-fn preselect_player(arena: &Arena, player: &Player) -> bool {
-    SUS_SCORE
-        .low
-        .perf(&arena.schedule.speed)
-        .map(|score| score <= player.score)
-        .unwrap_or(false)
+    fn preselect_player(&self, arena: &Arena, player: &Player) -> bool {
+        self.sus_score
+            .low
+            .perf(&arena.schedule.speed)
+            .map(|score| score <= player.score)
+            .unwrap_or(false)
+    }
 }
 
 #[cfg(test)]
@@ -297,11 +301,9 @@ mod test {
         l.get_user_games("german11", "bullet").await;
     }
 
-
     // #[tokio::test]
     // async fn test_get_user_info_closed_account() {
     //     let l = setup_lichess();
     //     l.get_users_info(&["Closed_Account"]).await;
     // }
-
 }

@@ -1,7 +1,7 @@
+use chrono::Utc;
 use log::{debug, info, trace};
 use reqwest::{Client, Response};
 use serde::Deserialize;
-use chrono::Utc;
 
 use crate::{
     game_visitor::GameResult,

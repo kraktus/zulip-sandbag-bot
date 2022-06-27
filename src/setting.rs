@@ -2,6 +2,7 @@
 
 use std::time::Duration;
 
+use crate::score::SusScore;
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 use serde_with::{serde_as, DurationSeconds};
@@ -17,6 +18,7 @@ pub struct Settings {
     pub lichess_token: Option<String>,
     #[serde_as(as = "DurationSeconds<u64>")]
     pub sleep_time: Duration,
+    pub score: SusScore,
 }
 
 fn as_true() -> bool {

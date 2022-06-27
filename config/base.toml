@@ -8,3 +8,21 @@ key = "xxxxxx"
 site = "hxxps://YOUR_ZULIP_DOMAIN.com"
 channel = "mod-hunter-boost"
 topic = "sandbag-bot"
+
+[score.high]
+bullet = 45
+super_blitz = 45
+blitz = 40
+rapid = 35
+
+[score.medium]
+bullet = 35
+super_blitz = 35
+blitz = 30
+rapid = 25
+
+[score.low]
+bullet = 30
+super_blitz = 30
+blitz = 25
+rapid = 20
