@@ -10,10 +10,10 @@ channel = "mod-hunter-boost"
 topic = "sandbag-bot"
 
 [score.high]
-bullet = 45
-super_blitz = 45
-blitz = 40
-rapid = 35
+bullet = 55
+super_blitz = 55
+blitz = 50
+rapid = 45
 
 [score.medium]
 bullet = 35
