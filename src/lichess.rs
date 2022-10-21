@@ -160,7 +160,7 @@ impl Lichess {
             warn!("{err}, requested user ids {user_ids:?}");
             err
         })
-        .map(|users| HashMap::from_iter(users.into_iter().map(|u| ((&u.id).to_string(), u))))
+        .map(|users| HashMap::from_iter(users.into_iter().map(|u| (u.id.to_string(), u))))
     }
 
     pub async fn get_user_games(&self, user_id: &str, perf: &str) -> Option<MoveCounter> {
@@ -260,7 +260,7 @@ mod test {
     use super::*;
     use crate::setting::Settings;
     use env_logger::{Builder, Target};
-    use log::{debug, LevelFilter};
+    use log::{LevelFilter};
 
     #[test]
     fn test_arena_rating_limit() {

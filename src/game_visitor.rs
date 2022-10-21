@@ -107,6 +107,6 @@ pub fn get_games(games: String, user_id: &str) -> MoveCounter {
     let mut reader = BufferedReader::new_cursor(&games[..]);
 
     let mut counter = MoveCounter::new(user_id.to_string());
-    let _moves = reader.read_all(&mut counter).expect("valid pgn");
+    reader.read_all(&mut counter).expect("valid pgn");
     counter
 }
