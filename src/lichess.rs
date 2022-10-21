@@ -260,13 +260,15 @@ mod test {
     use super::*;
     use crate::setting::Settings;
     use env_logger::{Builder, Target};
-    use log::{LevelFilter};
+    use log::LevelFilter;
 
     #[test]
     fn test_arena_rating_limit() {
-        let mut a = Arena::default();
-        a.has_max_rating = true;
-        a.full_name = "≤1500 Blitz Arena".to_string();
+        let a = lichess::Arena {
+            has_max_rating: true,
+            full_name: "≤1500 Blitz Arena".to_string(),
+            ..Default::default()
+        };
         assert_eq!(a.rating_limit(), Some(1500));
     }
 
