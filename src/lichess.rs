@@ -181,7 +181,6 @@ impl Lichess {
         self.zulip.start_message().await
     }
 
-    #[allow(clippy::blocks_in_if_conditions)] // conflicts with `rustfmt` https://github.com/rust-lang/rust-clippy/issues/8099
     pub async fn watch(&self) {
         debug!("Start screening recent arenas");
         for arena in self
