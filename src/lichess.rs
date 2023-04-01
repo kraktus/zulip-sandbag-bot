@@ -164,7 +164,7 @@ impl Lichess {
     }
 
     pub async fn get_user_games(&self, user_id: &str, perf: &str) -> Option<MoveCounter> {
-        let last_6_months = (Utc::today() - chrono::Duration::days(180)).format("%Y-%m-%d");
+        let last_6_months = (Utc::now() - chrono::Duration::days(180)).format("%Y-%m-%d");
         let games = timeout(
             Duration::from_secs(60),
             self.get(

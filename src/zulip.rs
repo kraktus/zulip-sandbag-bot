@@ -71,7 +71,7 @@ impl Zulip {
         let perf_index = perf_to_index(perf)
             .map(|x| x.to_string())
             .unwrap_or_else(|| "?".to_string());
-        let last_6_months = (Utc::today() - chrono::Duration::days(180)).format("%Y-%m-%d");
+        let last_6_months = (Utc::now() - chrono::Duration::days(180)).format("%Y-%m-%d");
         let msg = format!("
 **[{user_id} ({user_rating})](https://lichess.org/@/{user_id})**
 {user_id} scored {user_score} in [{arena_fullname}](https://lichess.org/tournament/{arena_id})
